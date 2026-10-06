@@ -4,11 +4,18 @@
     <string name="org_name">Andhra Pradesh Community Managed Natural Farming</string>
 
     <!-- Login -->
-    <string name="login_title">Cadre Login / లాగిన్</string>
-    <string name="login_instruction">Enter your registered Cadre ID and Mobile Number</string>
+    <string name="login_title">APCNF Portal Login / లాగిన్</string>
+    <string name="tab_cadre_login">Cadre Login</string>
+    <string name="tab_admin_login">Admin Portal</string>
+    <string name="login_instruction">Select your role and enter credentials to continue</string>
     <string name="cadre_id_hint">Cadre ID (e.g. FMT101 / ICRP05)</string>
     <string name="mobile_hint">Registered Mobile (10 Digits)</string>
-    <string name="btn_login">Login / ప్రవేశించండి</string>
+    <string name="admin_username_hint">Admin Username / Email</string>
+    <string name="admin_password_hint">Admin Password</string>
+    <string name="btn_login">Cadre Login / ప్రవేశించండి</string>
+    <string name="btn_admin_login">Admin Login / లాగిన్</string>
+    <string name="admin_portal_title">APCNF Admin Portal</string>
+    <string name="admin_portal_subtitle">State Monitoring & Oversight</string>
     <string name="config_server_url">Configure Server URL / సర్వర్ లింక్</string>
     <string name="server_url_hint">Google Apps Script Web App URL</string>
     <string name="save_url">Save URL</string>

@@ -16,19 +16,19 @@
         <!-- Logo & Brand Header -->
         <ImageView
             android:id="@+id/ivLogo"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:layout_marginTop="32dp"
+            android:layout_width="92dp"
+            android:layout_height="92dp"
+            android:layout_marginTop="28dp"
             android:src="@drawable/app_logo"
             android:contentDescription="@string/app_name" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="14dp"
             android:text="@string/app_name"
             android:textColor="@color/primary"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
@@ -44,7 +44,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="24dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="3dp"
             app:cardBackgroundColor="@color/surface">
@@ -53,61 +53,136 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
+
+                <!-- Role Selector Tabs -->
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleRoleGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:checkedButton="@id/btnRoleCadre">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRoleCadre"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/tab_cadre_login"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRoleAdmin"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="@string/tab_admin_login"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 <TextView
+                    android:id="@+id/tvInstruction"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/login_title"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/login_instruction"
                     android:textColor="@color/text_secondary"
-                    android:textSize="13sp" />
+                    android:textSize="12sp" />
 
-                <!-- Cadre ID Input -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilCadreId"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                <!-- 1. CADRE LOGIN FIELDS -->
+                <LinearLayout
+                    android:id="@+id/llCadreFields"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:hint="@string/cadre_id_hint">
+                    android:orientation="vertical">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etCadreId"
+                    <!-- Cadre ID Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilCadreId"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textAllCaps="true"
-                        android:inputType="textCapCharacters"
-                        android:singleLine="true" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:layout_marginTop="14dp"
+                        android:hint="@string/cadre_id_hint">
 
-                <!-- Mobile Input -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilMobile"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etCadreId"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textAllCaps="true"
+                            android:inputType="textCapCharacters"
+                            android:singleLine="true" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Mobile Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilMobile"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:hint="@string/mobile_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etMobile"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:maxLength="10"
+                            android:singleLine="true" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- 2. ADMIN LOGIN FIELDS -->
+                <LinearLayout
+                    android:id="@+id/llAdminFields"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:hint="@string/mobile_hint">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etMobile"
+                    <!-- Admin Username / Email Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilAdminUsername"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="phone"
-                        android:maxLength="10"
-                        android:singleLine="true" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:layout_marginTop="14dp"
+                        android:hint="@string/admin_username_hint">
 
-                <!-- Status Message -->
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAdminUsername"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textEmailAddress"
+                            android:singleLine="true" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Admin Password Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilAdminPassword"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:passwordToggleEnabled="true"
+                        android:hint="@string/admin_password_hint">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAdminPassword"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPassword"
+                            android:singleLine="true" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Status / Error Banner -->
                 <TextView
                     android:id="@+id/tvStatus"
                     android:layout_width="match_parent"
@@ -117,19 +192,19 @@
                     android:textSize="13sp"
                     android:visibility="gone" />
 
-                <!-- Login Button -->
+                <!-- Submit Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="18dp"
                     android:text="@string/btn_login"
-                    android:textSize="16sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     app:cornerRadius="12dp"
                     android:backgroundTint="@color/primary" />
 
-                <!-- Loading Progress -->
+                <!-- Loading Spinner -->
                 <ProgressBar
                     android:id="@+id/pbLoading"
                     android:layout_width="wrap_content"
@@ -146,7 +221,7 @@
             android:id="@+id/tvConfigServer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="24dp"
             android:text="@string/config_server_url"
             android:textColor="@color/primary"
             android:textSize="14sp"

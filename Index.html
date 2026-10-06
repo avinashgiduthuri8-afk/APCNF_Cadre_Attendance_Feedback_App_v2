@@ -323,19 +323,39 @@
 
     <!-- View 1: Login Card -->
     <div id="viewLogin" class="card">
-      <div class="card-title">🔐 Cadre Login / లాగిన్</div>
-      <p style="font-size: 13px; color: var(--text-muted);">Enter registered Cadre ID and Mobile Number</p>
+      <div class="nav-tabs" style="margin-bottom: 14px;">
+        <button id="btnRoleCadre" class="tab-btn active" onclick="setLoginRole('CADRE')">🌾 Cadre Login</button>
+        <button id="btnRoleAdmin" class="tab-btn" onclick="setLoginRole('ADMIN')">🛡️ Admin Portal</button>
+      </div>
 
-      <label>Cadre ID *</label>
-      <input id="inpCadreId" placeholder="e.g. FMT101 / ICRP05" autocapitalize="characters">
+      <!-- Cadre Inputs -->
+      <div id="boxCadreInputs">
+        <div class="card-title">🔐 Cadre Login / లాగిన్</div>
+        <p style="font-size: 13px; color: var(--text-muted);">Enter registered Cadre ID and Mobile Number</p>
 
-      <label>Mobile Number *</label>
-      <input id="inpMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit registered number">
+        <label>Cadre ID *</label>
+        <input id="inpCadreId" placeholder="e.g. FMT101 / ICRP05" autocapitalize="characters">
+
+        <label>Mobile Number *</label>
+        <input id="inpMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit registered number">
+      </div>
+
+      <!-- Admin Inputs -->
+      <div id="boxAdminInputs" class="hidden">
+        <div class="card-title">🛡️ Admin Authentication / అడ్మిన్ లాగిన్</div>
+        <p style="font-size: 13px; color: var(--text-muted);">Enter administrative username/email and password</p>
+
+        <label>Admin Username / Email *</label>
+        <input id="inpAdminUser" type="email" placeholder="admin@apcnf.gov.in">
+
+        <label>Admin Password *</label>
+        <input id="inpAdminPass" type="password" placeholder="Enter administrative password">
+      </div>
 
       <div id="loginMsg" class="msg-banner"></div>
 
       <button id="btnLogin" class="btn" onclick="handleLogin()">
-        <span>Login / ప్రవేశించండి</span>
+        <span id="btnLoginText">Login / ప్రవేశించండి</span>
       </button>
     </div>
 
@@ -484,6 +504,66 @@
 
     </div>
 
+    <!-- View 3: Admin Portal Dashboard -->
+    <div id="viewAdminApp" class="hidden">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div class="card-title" style="margin-bottom: 2px;">🛡️ APCNF Admin Portal</div>
+            <p id="adminWelcomeName" style="font-size: 13px; color: var(--text-muted);">State Administrator</p>
+          </div>
+          <span class="badge" style="background: var(--accent-light); color: var(--accent);">ADMIN</span>
+        </div>
+
+        <div style="margin-top: 18px;">
+          <div class="card-title" style="font-size: 15px;">📊 Statewide Overview Today</div>
+          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
+            <div class="stat-card">
+              <b id="adminStatTotalCadres">0</b>
+              <span>Total Cadres</span>
+            </div>
+            <div class="stat-card">
+              <b id="adminStatActiveCadres" style="color: var(--success);">0</b>
+              <span>Active Cadres</span>
+            </div>
+          </div>
+          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
+            <div class="stat-card">
+              <b id="adminStatField">0</b>
+              <span>Today Field Visits</span>
+            </div>
+            <div class="stat-card">
+              <b id="adminStatMeeting" style="color: var(--accent);">0</b>
+              <span>Today Meetings</span>
+            </div>
+          </div>
+          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="stat-card">
+              <b id="adminStatFeedback">0</b>
+              <span>Total Feedbacks</span>
+            </div>
+            <div class="stat-card">
+              <b id="adminStatAvgRating" style="color: var(--accent);">0.0 ★</b>
+              <span>Average Rating</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <div class="card-title" style="font-size: 15px;">📋 Recent Live Submissions</div>
+          <div id="adminRecentList" style="margin-top: 8px;"></div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="loadAdminDashboard()" style="margin-top: 20px;">
+          🔄 Refresh Admin Data
+        </button>
+
+        <button class="btn btn-secondary" style="margin-top: 10px; color: var(--danger); border-color: var(--danger);" onclick="logout()">
+          🚪 Logout / లాగౌట్
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <canvas id="compressCanvas" style="display:none"></canvas>
@@ -563,20 +643,47 @@
     }
 
     let currentUser = null;
+    let currentAdmin = null;
+    let currentRole = 'CADRE';
+    let currentToken = null;
     let currentCoords = null;
     let compressedPhotoBase64 = null;
     const ratings = { contentRating: 5, trainerRating: 5, usefulnessRating: 5, overallRating: 5 };
 
     // Auto-restore session from sessionStorage
     window.addEventListener('DOMContentLoaded', () => {
-      const saved = sessionStorage.getItem('apcnf_user');
-      if (saved) {
+      const savedRole = sessionStorage.getItem('apcnf_role');
+      currentToken = sessionStorage.getItem('apcnf_token');
+
+      if (savedRole === 'ADMIN') {
+        const savedAdmin = sessionStorage.getItem('apcnf_admin');
+        if (savedAdmin) {
+          try {
+            currentAdmin = JSON.parse(savedAdmin);
+            showAdminApp();
+            return;
+          } catch (e) {}
+        }
+      }
+
+      const savedUser = sessionStorage.getItem('apcnf_user');
+      if (savedUser) {
         try {
-          currentUser = JSON.parse(saved);
+          currentUser = JSON.parse(savedUser);
           showApp();
         } catch (e) {}
       }
     });
+
+    function setLoginRole(role) {
+      currentRole = role;
+      document.getElementById('btnRoleCadre').classList.toggle('active', role === 'CADRE');
+      document.getElementById('btnRoleAdmin').classList.toggle('active', role === 'ADMIN');
+      document.getElementById('boxCadreInputs').classList.toggle('hidden', role !== 'CADRE');
+      document.getElementById('boxAdminInputs').classList.toggle('hidden', role !== 'ADMIN');
+      document.getElementById('btnLoginText').innerText = role === 'CADRE' ? 'Login / ప్రవేశించండి' : 'Admin Login / లాగిన్';
+      document.getElementById('loginMsg').style.display = 'none';
+    }
 
     function setStar(field, value) {
       ratings[field] = value;
@@ -612,10 +719,50 @@
     }
 
     function handleLogin() {
-      const cadreId = document.getElementById('inpCadreId').value.trim();
-      const mobile = document.getElementById('inpMobile').value.trim();
       const msg = document.getElementById('loginMsg');
       const btn = document.getElementById('btnLogin');
+
+      if (currentRole === 'ADMIN') {
+        const username = document.getElementById('inpAdminUser').value.trim();
+        const password = document.getElementById('inpAdminPass').value;
+
+        if (!username || !password) {
+          showMsg(msg, 'Please enter administrative username and password.', 'error');
+          return;
+        }
+
+        showMsg(msg, 'Authenticating administrator credentials...', 'info');
+        btn.disabled = true;
+
+        fetch('/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'adminLogin', username: username, password: password })
+        })
+          .then(r => r.json())
+          .then(res => {
+            btn.disabled = false;
+            if (res.success && res.admin) {
+              currentAdmin = res.admin;
+              currentToken = res.token;
+              sessionStorage.setItem('apcnf_role', 'ADMIN');
+              sessionStorage.setItem('apcnf_admin', JSON.stringify(res.admin));
+              sessionStorage.setItem('apcnf_token', res.token);
+              showAdminApp();
+            } else {
+              showMsg(msg, res.message || 'Invalid administrator credentials.', 'error');
+            }
+          })
+          .catch(err => {
+            btn.disabled = false;
+            showMsg(msg, 'Server connection error: ' + err.message, 'error');
+          });
+        return;
+      }
+
+      // Cadre Authentication Flow
+      const cadreId = document.getElementById('inpCadreId').value.trim();
+      const mobile = document.getElementById('inpMobile').value.trim();
 
       if (!cadreId || !mobile) {
         showMsg(msg, 'Please enter both Cadre ID and Mobile Number.', 'error');
@@ -630,33 +777,39 @@
       showMsg(msg, 'Verifying cadre credentials...', 'info');
       btn.disabled = true;
 
-      google.script.run
-        .withSuccessHandler(cadre => {
+      fetch('/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', cadreId: cadreId, mobile: mobile })
+      })
+        .then(r => r.json())
+        .then(res => {
           btn.disabled = false;
-          if (!cadre) {
-            showMsg(msg, 'Cadre not found. Check Cadre ID and Mobile Number.', 'error');
-            return;
+          if (res.success && res.cadre) {
+            currentUser = res.cadre;
+            currentToken = res.token;
+            sessionStorage.setItem('apcnf_role', 'CADRE');
+            sessionStorage.setItem('apcnf_user', JSON.stringify(res.cadre));
+            sessionStorage.setItem('apcnf_token', res.token);
+            showApp();
+          } else {
+            showMsg(msg, res.message || 'Cadre not found. Check Cadre ID and Mobile.', 'error');
           }
-          if (String(cadre.status || 'Active').toLowerCase() !== 'active') {
-            showMsg(msg, 'Cadre is inactive. Please contact Mandal Incharge.', 'error');
-            return;
-          }
-          currentUser = cadre;
-          sessionStorage.setItem('apcnf_user', JSON.stringify(cadre));
-          showApp();
         })
-        .withFailureHandler(err => {
+        .catch(err => {
           btn.disabled = false;
-          showMsg(msg, err.message || 'Login verification failed.', 'error');
-        })
-        .getCadre(cadreId, mobile);
+          showMsg(msg, 'Connection error: ' + err.message, 'error');
+        });
     }
 
     function showApp() {
       document.getElementById('viewLogin').classList.add('hidden');
+      document.getElementById('viewAdminApp').classList.add('hidden');
       document.getElementById('viewApp').classList.remove('hidden');
       document.getElementById('headerBadge').classList.remove('hidden');
       document.getElementById('userRoleBadge').innerText = currentUser.cadreType;
+      document.getElementById('userRoleBadge').style.background = 'var(--primary-light)';
+      document.getElementById('userRoleBadge').style.color = 'var(--primary)';
 
       document.getElementById('dashName').innerText = currentUser.name;
       document.getElementById('dashMeta').innerText = `ID: ${currentUser.cadreId} • Mobile: ${currentUser.mobile} (${currentUser.cadreType})`;
@@ -664,6 +817,68 @@
       document.getElementById('dashVo').innerText = `VO: ${currentUser.vo || 'N/A'}`;
 
       acquireGPS();
+    }
+
+    function showAdminApp() {
+      document.getElementById('viewLogin').classList.add('hidden');
+      document.getElementById('viewApp').classList.add('hidden');
+      document.getElementById('viewAdminApp').classList.remove('hidden');
+      document.getElementById('headerBadge').classList.remove('hidden');
+      document.getElementById('userRoleBadge').innerText = 'ADMIN';
+      document.getElementById('userRoleBadge').style.background = 'var(--accent-light)';
+      document.getElementById('userRoleBadge').style.color = 'var(--accent)';
+
+      document.getElementById('adminWelcomeName').innerText = currentAdmin.name || currentAdmin.username;
+      loadAdminDashboard();
+    }
+
+    function loadAdminDashboard() {
+      if (!currentToken) return;
+      fetch('/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getAdminDashboard', token: currentToken })
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success && res.data) {
+            const d = res.data;
+            document.getElementById('adminStatTotalCadres').innerText = d.totalCadres || 0;
+            document.getElementById('adminStatActiveCadres').innerText = d.activeCadres || 0;
+            document.getElementById('adminStatField').innerText = d.todayFieldVisits || 0;
+            document.getElementById('adminStatMeeting').innerText = d.todayMeetings || 0;
+            document.getElementById('adminStatFeedback').innerText = d.totalFeedback || 0;
+            document.getElementById('adminStatAvgRating').innerText = (d.averageRating || 0) + ' ★';
+
+            const listEl = document.getElementById('adminRecentList');
+            listEl.innerHTML = '';
+            const recents = d.recentAttendance || [];
+            if (recents.length === 0) {
+              listEl.innerHTML = '<p style="font-size: 13px; color: var(--text-muted);">No submissions recorded yet today.</p>';
+            } else {
+              recents.forEach(item => {
+                const row = document.createElement('div');
+                row.style.background = 'var(--bg)';
+                row.style.padding = '10px 12px';
+                row.style.borderRadius = '10px';
+                row.style.marginBottom = '8px';
+                row.style.border = '1px solid var(--border)';
+                row.innerHTML = `
+                  <div style="font-weight: 700; font-size: 13px; color: var(--text);">
+                    ${item.name || 'Cadre'} (${item.cadreType || 'FMT'}) • ${item.activity || 'Field Visit'}
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                    ID: ${item.cadreId} • Time: ${item.time || ''} • ${item.remarks ? 'Remarks: ' + item.remarks : ''}
+                  </div>
+                `;
+                listEl.appendChild(row);
+              });
+            }
+          }
+        })
+        .catch(err => {
+          console.error('Failed to load admin dashboard:', err);
+        });
     }
 
     function acquireGPS() {

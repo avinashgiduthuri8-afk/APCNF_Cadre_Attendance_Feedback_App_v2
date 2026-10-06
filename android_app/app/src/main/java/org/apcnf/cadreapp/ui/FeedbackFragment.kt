@@ -80,7 +80,7 @@ class FeedbackFragment : Fragment() {
 
         lifecycleScope.launch {
             val apiService = ApiService(sessionManager.getServerUrl())
-            val result = apiService.submitFeedback(request)
+            val result = apiService.submitFeedback(request, sessionManager.getAuthToken())
 
             setLoading(false)
 

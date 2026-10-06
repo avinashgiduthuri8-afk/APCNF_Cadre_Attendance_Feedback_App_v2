@@ -36,9 +36,15 @@
             </intent-filter>
         </activity>
 
-        <!-- Main Home Activity with Bottom Tabs -->
+        <!-- Main Home Activity with Bottom Tabs (Cadre) -->
         <activity
             android:name=".ui.MainActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Admin Portal Activity (Administrator) -->
+        <activity
+            android:name=".ui.admin.AdminMainActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 

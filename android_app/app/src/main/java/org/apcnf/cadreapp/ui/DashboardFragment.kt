@@ -81,7 +81,7 @@ class DashboardFragment : Fragment() {
 
         lifecycleScope.launch {
             val apiService = ApiService(serverUrl)
-            val result = apiService.getDashboard(cadre.cadreId)
+            val result = apiService.getDashboard(cadre.cadreId, sessionManager.getAuthToken())
 
             result.onSuccess { data ->
                 binding.tvFieldCount.text = data.totalFieldVisits.toString()
@@ -127,16 +127,17 @@ class DashboardFragment : Fragment() {
 
         lifecycleScope.launch {
             val apiService = ApiService(sessionManager.getServerUrl())
+            val token = sessionManager.getAuthToken()
             var successCount = 0
 
             for (item in items) {
                 try {
                     val result = if (item.type == "attendance") {
                         val req = ApiClient.gson.fromJson(item.jsonPayload, AttendanceRequest::class.java)
-                        apiService.submitAttendance(req)
+                        apiService.submitAttendance(req, token)
                     } else {
                         val req = ApiClient.gson.fromJson(item.jsonPayload, FeedbackRequest::class.java)
-                        apiService.submitFeedback(req)
+                        apiService.submitFeedback(req, token)
                     }
 
                     if (result.isSuccess) {

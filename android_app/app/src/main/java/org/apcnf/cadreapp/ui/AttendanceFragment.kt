@@ -203,7 +203,7 @@ class AttendanceFragment : Fragment() {
 
         lifecycleScope.launch {
             val apiService = ApiService(sessionManager.getServerUrl())
-            val result = apiService.submitAttendance(request)
+            val result = apiService.submitAttendance(request, sessionManager.getAuthToken())
 
             setLoading(false)
 
