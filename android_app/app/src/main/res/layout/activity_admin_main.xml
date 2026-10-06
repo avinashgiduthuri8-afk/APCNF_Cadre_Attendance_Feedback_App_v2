@@ -12,9 +12,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/bg_header_gradient"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:paddingHorizontal="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="12dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -34,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/admin_portal_title"
                     android:textColor="@color/white"
-                    android:textSize="18sp"
+                    android:textSize="17sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -42,33 +42,129 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Administrator"
+                    android:text="State Administrator"
                     android:textColor="#E0E7FF"
                     android:textSize="12sp" />
             </LinearLayout>
 
-            <!-- Admin Role Badge -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_chip"
                 android:text="ADMIN"
                 android:textColor="@color/primary"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp" />
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="3dp" />
+
+            <ImageButton
+                android:id="@+id/btnAdminTopRefresh"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="6dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_refresh"
+                app:tint="@color/white"
+                android:contentDescription="Refresh" />
 
             <ImageButton
                 android:id="@+id/btnAdminLogout"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="4dp"
                 android:background="?selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_logout"
+                app:tint="@color/white"
                 android:contentDescription="@string/btn_logout" />
         </LinearLayout>
+
+        <!-- Segmented Tab Navigation -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginTop="10dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabOverview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:text="📊 Overview"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    app:cornerRadius="19dp"
+                    app:backgroundTint="@color/white"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="14dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabAttendance"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="8dp"
+                    android:text="📍 Attendance"
+                    android:textSize="12sp"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="19dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="14dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabFeedback"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="8dp"
+                    android:text="📝 Feedback"
+                    android:textSize="12sp"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="19dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="14dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTabCadres"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="8dp"
+                    android:text="👥 Cadres"
+                    android:textSize="12sp"
+                    android:textColor="@color/white"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="19dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="14dp" />
+
+            </LinearLayout>
+        </HorizontalScrollView>
     </LinearLayout>
+
+    <!-- Global Progress Bar -->
+    <ProgressBar
+        android:id="@+id/pbAdminLoading"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:indeterminate="true"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:visibility="gone" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -82,23 +178,28 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Summary Card -->
-            <androidx.cardview.widget.CardView
+            <!-- ================= TAB 1: OVERVIEW ================= -->
+            <LinearLayout
+                android:id="@+id/layoutOverview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface">
+                android:orientation="vertical"
+                android:visibility="visible">
 
-                <LinearLayout
+                <!-- Summary Card -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/surface">
 
-                    <div
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -106,265 +207,639 @@
                             android:textColor="@color/primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
-                    </div>
 
-                    <!-- Row 1 Metrics: Total Cadres & Active -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:orientation="horizontal">
-
+                        <!-- Row 1 Metrics: Total Cadres & Active -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_card"
-                            android:padding="12dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                            android:layout_marginTop="14dp"
+                            android:orientation="horizontal">
 
-                            <TextView
-                                android:id="@+id/tvAdminTotalCadres"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="@color/primary"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_card"
+                                android:padding="12dp"
+                                android:gravity="center"
+                                android:orientation="vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                                <TextView
+                                    android:id="@+id/tvAdminTotalCadres"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/primary"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Total Cadres"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Total Cadres"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_card"
+                                android:padding="12dp"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvAdminActiveCadres"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/status_present"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Active Cadres"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
                         </LinearLayout>
 
+                        <!-- Row 2 Metrics: Today Field & Meeting -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_card"
-                            android:padding="12dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
 
-                            <TextView
-                                android:id="@+id/tvAdminActiveCadres"
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="@color/status_present"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_card"
+                                android:padding="12dp"
+                                android:gravity="center"
+                                android:orientation="vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                                <TextView
+                                    android:id="@+id/tvAdminTodayField"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/primary"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Today's Field Visits"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Active Cadres"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_card"
+                                android:padding="12dp"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvAdminTodayMeetings"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/accent"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Today's Meetings"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
                         </LinearLayout>
+
+                        <!-- Row 3 Metrics: Feedback & Rating -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_card"
+                                android:padding="12dp"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvAdminTotalFeedback"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textColor="@color/primary"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Total Feedback"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_card"
+                                android:padding="12dp"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvAdminAvgRating"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0.0 ★"
+                                    android:textColor="@color/accent"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:text="Average Rating"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+                        </LinearLayout>
+
                     </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
-                    <!-- Row 2 Metrics: Today Field & Meeting -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_card"
-                            android:padding="12dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvAdminTodayField"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="@color/primary"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Today's Field Visits"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_card"
-                            android:padding="12dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvAdminTodayMeetings"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="@color/accent"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Today's Meetings"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <!-- Row 3 Metrics: Feedback & Rating -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="@drawable/bg_card"
-                            android:padding="12dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvAdminTotalFeedback"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0"
-                                android:textColor="@color/primary"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Total Feedback"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/bg_card"
-                            android:padding="12dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tvAdminAvgRating"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0.0 ★"
-                                android:textColor="@color/accent"
-                                android:textSize="22sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Average Rating"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="11sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Loading Spinner -->
-            <ProgressBar
-                android:id="@+id/pbAdminLoading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginVertical="16dp"
-                android:visibility="gone" />
-
-            <!-- Recent Live Submissions Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/surface">
-
-                <LinearLayout
+                <!-- Recent Live Submissions Card -->
+                <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Recent Cadre Submissions / తాజా వివరాలు"
-                        android:textColor="@color/primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/surface">
 
                     <LinearLayout
-                        android:id="@+id/llRecentSubmissions"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="vertical" />
+                        android:orientation="vertical"
+                        android:padding="18dp">
 
-                    <TextView
-                        android:id="@+id/tvNoSubmissions"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="No submissions recorded yet today."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp"
-                        android:visibility="gone" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Recent Cadre Submissions / తాజా వివరాలు"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
 
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                        <LinearLayout
+                            android:id="@+id/llRecentSubmissions"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="vertical" />
 
-            <!-- Refresh Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAdminRefresh"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        <TextView
+                            android:id="@+id/tvNoSubmissions"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="No submissions recorded yet today."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+            <!-- ================= TAB 2: ATTENDANCE RECORDS ================= -->
+            <LinearLayout
+                android:id="@+id/layoutAttendance"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="16dp"
-                android:text="Refresh Overview / రీఫ్రెష్"
-                app:icon="@drawable/ic_refresh"
-                app:iconTint="@color/primary"
-                android:textColor="@color/primary"
-                app:cornerRadius="12dp"
-                app:strokeColor="@color/primary" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Filter Controls Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📍 Filter Attendance Records"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <!-- Search Bar -->
+                        <EditText
+                            android:id="@+id/etAttendanceSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_card"
+                            android:drawableStart="@drawable/ic_search"
+                            android:drawablePadding="10dp"
+                            android:hint="Search cadre ID, name, remarks..."
+                            android:paddingHorizontal="12dp"
+                            android:textSize="13sp"
+                            android:inputType="text" />
+
+                        <!-- Filters Row: Activity & Cadre Type -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <Spinner
+                                android:id="@+id/spAttendanceActivity"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_card" />
+
+                            <Spinner
+                                android:id="@+id/spAttendanceCadreType"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_card" />
+                        </LinearLayout>
+
+                        <!-- Date Range From & To Selection -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnDateFrom"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:text="From: All"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                app:strokeColor="@color/border"
+                                app:cornerRadius="8dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnDateTo"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:text="To: Today"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_primary"
+                                app:strokeColor="@color/border"
+                                app:cornerRadius="8dp" />
+                        </LinearLayout>
+
+                        <!-- Action Buttons: Filter & Export Excel -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnFilterAttendance"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1"
+                                android:text="Filter / సెర్చ్"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/white"
+                                app:cornerRadius="10dp"
+                                app:backgroundTint="@color/primary" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnExportAttendance"
+                                android:layout_width="0dp"
+                                android:layout_height="46dp"
+                                android:layout_weight="1.3"
+                                android:layout_marginStart="8dp"
+                                android:text="📥 Export to Excel"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/white"
+                                app:cornerRadius="10dp"
+                                app:backgroundTint="#059669" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Results Count -->
+                <TextView
+                    android:id="@+id/tvAttendanceCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="6dp"
+                    android:text="Showing attendance records"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Dynamic Attendance List Container -->
+                <LinearLayout
+                    android:id="@+id/llAttendanceCards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tvNoAttendanceMatches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingVertical="30dp"
+                    android:text="No matching attendance records found."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- ================= TAB 3: FEEDBACK REVIEWS ================= -->
+            <LinearLayout
+                android:id="@+id/layoutFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Filter Controls Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📝 Review Training Feedback"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <!-- Search Bar -->
+                        <EditText
+                            android:id="@+id/etFeedbackSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_card"
+                            android:drawableStart="@drawable/ic_search"
+                            android:drawablePadding="10dp"
+                            android:hint="Search topic, trainer, cadre, suggestion..."
+                            android:paddingHorizontal="12dp"
+                            android:textSize="13sp"
+                            android:inputType="text" />
+
+                        <!-- Filters Row: Cadre Type & Rating -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <Spinner
+                                android:id="@+id/spFeedbackCadreType"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_card" />
+
+                            <Spinner
+                                android:id="@+id/spFeedbackRating"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_card" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFilterFeedback"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="12dp"
+                            android:text="Apply Filter / సెర్చ్ చేయండి"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            app:cornerRadius="10dp"
+                            app:backgroundTint="@color/primary" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Results Count -->
+                <TextView
+                    android:id="@+id/tvFeedbackCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="6dp"
+                    android:text="Showing feedback records"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Dynamic Feedback List Container -->
+                <LinearLayout
+                    android:id="@+id/llFeedbackCards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tvNoFeedbackMatches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingVertical="30dp"
+                    android:text="No matching feedback reviews found."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- ================= TAB 4: CADRE DIRECTORY ================= -->
+            <LinearLayout
+                android:id="@+id/layoutCadres"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Filter Controls Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/surface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="👥 Master Cadre Directory"
+                            android:textColor="@color/primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <!-- Search Bar -->
+                        <EditText
+                            android:id="@+id/etCadresSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/bg_card"
+                            android:drawableStart="@drawable/ic_search"
+                            android:drawablePadding="10dp"
+                            android:hint="Search cadre ID, name, district, mandal..."
+                            android:paddingHorizontal="12dp"
+                            android:textSize="13sp"
+                            android:inputType="text" />
+
+                        <!-- Filters Row: Cadre Type & Status -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <Spinner
+                                android:id="@+id/spCadresType"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_card" />
+
+                            <Spinner
+                                android:id="@+id/spCadresStatus"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_card" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnFilterCadres"
+                            android:layout_width="match_parent"
+                            android:layout_height="46dp"
+                            android:layout_marginTop="12dp"
+                            android:text="Apply Filter / సెర్చ్ చేయండి"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            app:cornerRadius="10dp"
+                            app:backgroundTint="@color/primary" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Results Count -->
+                <TextView
+                    android:id="@+id/tvCadresCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginBottom="6dp"
+                    android:text="Showing cadre directory"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Dynamic Cadre List Container -->
+                <LinearLayout
+                    android:id="@+id/llCadresCards"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tvNoCadresMatches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingVertical="30dp"
+                    android:text="No cadres found matching criteria."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

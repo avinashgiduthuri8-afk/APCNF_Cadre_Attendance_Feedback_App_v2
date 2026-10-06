@@ -41,6 +41,19 @@ function doGet(e) {
     });
   }
 
+  // Direct CSV/Excel download endpoint for browser & export links
+  if (e && e.parameter && e.parameter.action === "downloadAttendanceCsv") {
+    try {
+      verifyToken_(e.parameter.token, CONFIG.ROLES.ADMIN);
+      const res = exportAdminAttendanceCsv_(e.parameter);
+      return ContentService.createTextOutput(res.csvContent)
+        .setMimeType(ContentService.MimeType.CSV)
+        .downloadAsFile(res.filename);
+    } catch (err) {
+      return jsonResponse_({ success: false, error: "AUTH_ERROR", message: err.message });
+    }
+  }
+
   return HtmlService.createTemplateFromFile("Index")
     .evaluate()
     .setTitle(CONFIG.APP_NAME)
@@ -145,7 +158,6 @@ function doPost(e) {
 
       // --- 4. Admin Data APIs (Strict Server-Side Authorization) ---
       case "getAdminDashboard": {
-        // Enforce ADMIN role verification
         verifyToken_(payload.token, CONFIG.ROLES.ADMIN);
         const adminDash = getAdminDashboardData_();
         return jsonResponse_({ success: true, data: adminDash });
@@ -155,6 +167,30 @@ function doPost(e) {
         verifyToken_(payload.token, CONFIG.ROLES.ADMIN);
         const allData = getAdminAllData_();
         return jsonResponse_({ success: true, data: allData });
+      }
+
+      case "getAdminAttendanceList": {
+        verifyToken_(payload.token, CONFIG.ROLES.ADMIN);
+        const records = getAdminAttendanceList_(payload);
+        return jsonResponse_({ success: true, count: records.length, data: records });
+      }
+
+      case "getAdminFeedbackList": {
+        verifyToken_(payload.token, CONFIG.ROLES.ADMIN);
+        const records = getAdminFeedbackList_(payload);
+        return jsonResponse_({ success: true, count: records.length, data: records });
+      }
+
+      case "getAdminCadreList": {
+        verifyToken_(payload.token, CONFIG.ROLES.ADMIN);
+        const cadres = getAdminCadreList_(payload);
+        return jsonResponse_({ success: true, count: cadres.length, data: cadres });
+      }
+
+      case "exportAdminAttendance": {
+        verifyToken_(payload.token, CONFIG.ROLES.ADMIN);
+        const exportData = exportAdminAttendanceCsv_(payload);
+        return jsonResponse_({ success: true, ...exportData });
       }
 
       default:
@@ -694,3 +730,254 @@ function getAdminAllData_() {
     totalFeedbackRecords: Math.max(0, fbRows.length - 1)
   };
 }
+
+/**
+ * ADMIN SEARCH & FILTER API: Retrieves attendance history with multi-field filtering.
+ */
+function getAdminAttendanceList_(payload) {
+  const ss = SpreadsheetApp.getActive();
+  const attRows = ss.getSheetByName(CONFIG.SHEETS.ATTENDANCE).getDataRange().getValues();
+  const filterDate = payload.date && payload.date !== "ALL" ? String(payload.date).trim() : null;
+  const filterActivity = payload.activity && payload.activity !== "ALL" ? String(payload.activity).trim() : null;
+  const filterCadreType = payload.cadreType && payload.cadreType !== "ALL" ? String(payload.cadreType).trim().toUpperCase() : null;
+  const filterQuery = payload.query ? String(payload.query).trim().toLowerCase() : null;
+  const limit = Math.min(Math.max(Number(payload.limit) || 100, 1), 200);
+
+  const results = [];
+  for (let i = attRows.length - 1; i >= 1; i--) {
+    const row = attRows[i];
+    const rDate = normalizeDate_(row[1]);
+    const rCadreId = String(row[3] || "").trim();
+    const rName = String(row[4] || "").trim();
+    const rCadreType = String(row[5] || "").trim().toUpperCase();
+    const rActivity = String(row[6] || "").trim();
+    const rRemarks = String(row[7] || "").trim();
+
+    if (filterDate && rDate !== filterDate) continue;
+    if (filterActivity && rActivity.toLowerCase() !== filterActivity.toLowerCase()) continue;
+    if (filterCadreType && rCadreType !== filterCadreType) continue;
+
+    if (filterQuery) {
+      const match = rCadreId.toLowerCase().includes(filterQuery) ||
+                    rName.toLowerCase().includes(filterQuery) ||
+                    rRemarks.toLowerCase().includes(filterQuery);
+      if (!match) continue;
+    }
+
+    results.push({
+      timestamp: row[0],
+      date: rDate,
+      time: String(row[2] || ""),
+      cadreId: rCadreId,
+      name: rName,
+      cadreType: rCadreType,
+      activity: rActivity,
+      remarks: rRemarks,
+      photoLink: String(row[8] || ""),
+      latitude: row[9],
+      longitude: row[10],
+      accuracy: row[11]
+    });
+
+    if (results.length >= limit) break;
+  }
+  return results;
+}
+
+/**
+ * ADMIN SEARCH & FILTER API: Retrieves feedback submissions with multi-field filtering.
+ */
+function getAdminFeedbackList_(payload) {
+  const ss = SpreadsheetApp.getActive();
+  const fbRows = ss.getSheetByName(CONFIG.SHEETS.FEEDBACK).getDataRange().getValues();
+  const filterCadreType = payload.cadreType && payload.cadreType !== "ALL" ? String(payload.cadreType).trim().toUpperCase() : null;
+  const filterMinRating = payload.minRating && payload.minRating !== "ALL" ? Number(payload.minRating) : null;
+  const filterQuery = payload.query ? String(payload.query).trim().toLowerCase() : null;
+  const limit = Math.min(Math.max(Number(payload.limit) || 100, 1), 200);
+
+  const results = [];
+  for (let i = fbRows.length - 1; i >= 1; i--) {
+    const row = fbRows[i];
+    const rDate = normalizeDate_(row[1]);
+    const rCadreId = String(row[2] || "").trim();
+    const rName = String(row[3] || "").trim();
+    const rCadreType = String(row[4] || "").trim().toUpperCase();
+    const rTraining = String(row[5] || "").trim();
+    const rTrainer = String(row[6] || "").trim();
+    const rOverallRating = Number(row[10] || 0);
+    const rSuggestions = String(row[11] || "").trim();
+
+    if (filterCadreType && rCadreType !== filterCadreType) continue;
+    if (filterMinRating !== null && rOverallRating < filterMinRating) continue;
+
+    if (filterQuery) {
+      const match = rCadreId.toLowerCase().includes(filterQuery) ||
+                    rName.toLowerCase().includes(filterQuery) ||
+                    rTraining.toLowerCase().includes(filterQuery) ||
+                    rTrainer.toLowerCase().includes(filterQuery) ||
+                    rSuggestions.toLowerCase().includes(filterQuery);
+      if (!match) continue;
+    }
+
+    results.push({
+      timestamp: row[0],
+      date: rDate,
+      cadreId: rCadreId,
+      name: rName,
+      cadreType: rCadreType,
+      training: rTraining,
+      trainer: rTrainer,
+      contentRating: Number(row[7] || 0),
+      trainerRating: Number(row[8] || 0),
+      usefulnessRating: Number(row[9] || 0),
+      overallRating: rOverallRating,
+      suggestions: rSuggestions
+    });
+
+    if (results.length >= limit) break;
+  }
+  return results;
+}
+
+/**
+ * ADMIN SEARCH & FILTER API: Retrieves master cadres directory with status and type filtering.
+ */
+function getAdminCadreList_(payload) {
+  const ss = SpreadsheetApp.getActive();
+  const cadreRows = ss.getSheetByName(CONFIG.SHEETS.CADRES).getDataRange().getValues();
+  const filterCadreType = payload.cadreType && payload.cadreType !== "ALL" ? String(payload.cadreType).trim().toUpperCase() : null;
+  const filterStatus = payload.status && payload.status !== "ALL" ? String(payload.status).trim().toLowerCase() : null;
+  const filterQuery = payload.query ? String(payload.query).trim().toLowerCase() : null;
+
+  const results = [];
+  for (let i = 1; i < cadreRows.length; i++) {
+    const row = cadreRows[i];
+    const rCadreId = String(row[0] || "").trim();
+    const rName = String(row[1] || "").trim();
+    const rMobile = String(row[2] || "").trim();
+    const rCadreType = String(row[3] || "").trim().toUpperCase();
+    const rDistrict = String(row[4] || "").trim();
+    const rMandal = String(row[5] || "").trim();
+    const rVillage = String(row[6] || "").trim();
+    const rVo = String(row[7] || "").trim();
+    const rStatus = String(row[8] || "Active").trim();
+
+    if (filterCadreType && rCadreType !== filterCadreType) continue;
+    if (filterStatus && rStatus.toLowerCase() !== filterStatus) continue;
+
+    if (filterQuery) {
+      const match = rCadreId.toLowerCase().includes(filterQuery) ||
+                    rName.toLowerCase().includes(filterQuery) ||
+                    rMobile.includes(filterQuery) ||
+                    rDistrict.toLowerCase().includes(filterQuery) ||
+                    rMandal.toLowerCase().includes(filterQuery) ||
+                    rVillage.toLowerCase().includes(filterQuery);
+      if (!match) continue;
+    }
+
+    results.push({
+      cadreId: rCadreId,
+      name: rName,
+      mobile: rMobile,
+      cadreType: rCadreType,
+      district: rDistrict,
+      mandal: rMandal,
+      village: rVillage,
+      vo: rVo,
+      status: rStatus
+    });
+  }
+  return results;
+}
+
+/**
+ * ADMIN EXPORT API: Exports cadre attendance records to CSV/Excel format based on Date From and To.
+ */
+function exportAdminAttendanceCsv_(payload) {
+  const ss = SpreadsheetApp.getActive();
+  const attRows = ss.getSheetByName(CONFIG.SHEETS.ATTENDANCE).getDataRange().getValues();
+  
+  const fromDate = payload.fromDate ? String(payload.fromDate).trim() : "2000-01-01";
+  const toDate = payload.toDate ? String(payload.toDate).trim() : "2099-12-31";
+  const filterActivity = payload.activity && payload.activity !== "ALL" ? String(payload.activity).trim().toLowerCase() : null;
+  const filterCadreType = payload.cadreType && payload.cadreType !== "ALL" ? String(payload.cadreType).trim().toUpperCase() : null;
+
+  const headers = [
+    "Date", "Time", "Cadre ID", "Cadre Name", "Cadre Type", 
+    "Activity", "Remarks", "Latitude", "Longitude", "Accuracy (m)", "Photo URL"
+  ];
+
+  const escapeCsv = (val) => {
+    if (val === null || val === undefined) return '""';
+    const s = String(val).replace(/"/g, '""');
+    return '"' + s + '"';
+  };
+
+  const csvLines = [headers.map(escapeCsv).join(",")];
+  const records = [];
+
+  for (let i = 1; i < attRows.length; i++) {
+    const row = attRows[i];
+    const rDate = normalizeDate_(row[1]);
+    const rTime = String(row[2] || "");
+    const rCadreId = String(row[3] || "").trim();
+    const rName = String(row[4] || "").trim();
+    const rCadreType = String(row[5] || "").trim().toUpperCase();
+    const rActivity = String(row[6] || "").trim();
+    const rRemarks = String(row[7] || "").trim();
+    const rPhoto = String(row[8] || "").trim();
+    const rLat = row[9] !== undefined ? row[9] : "";
+    const rLon = row[10] !== undefined ? row[10] : "";
+    const rAcc = row[11] !== undefined ? row[11] : "";
+
+    // Date range filter
+    if (rDate < fromDate || rDate > toDate) continue;
+
+    // Optional filters
+    if (filterActivity && rActivity.toLowerCase() !== filterActivity) continue;
+    if (filterCadreType && rCadreType !== filterCadreType) continue;
+
+    csvLines.push([
+      escapeCsv(rDate),
+      escapeCsv(rTime),
+      escapeCsv(rCadreId),
+      escapeCsv(rName),
+      escapeCsv(rCadreType),
+      escapeCsv(rActivity),
+      escapeCsv(rRemarks),
+      escapeCsv(rLat),
+      escapeCsv(rLon),
+      escapeCsv(rAcc),
+      escapeCsv(rPhoto)
+    ].join(","));
+
+    records.push({
+      date: rDate,
+      time: rTime,
+      cadreId: rCadreId,
+      name: rName,
+      cadreType: rCadreType,
+      activity: rActivity,
+      remarks: rRemarks,
+      latitude: rLat,
+      longitude: rLon,
+      accuracy: rAcc,
+      photoLink: rPhoto
+    });
+  }
+
+  const filename = "APCNF_Attendance_" + fromDate + "_to_" + toDate + ".csv";
+  const sheetUrl = ss ? ss.getUrl() : "";
+
+  return {
+    filename: filename,
+    fromDate: fromDate,
+    toDate: toDate,
+    count: records.length,
+    sheetUrl: sheetUrl,
+    csvContent: csvLines.join("\r\n"),
+    data: records
+  };
+}
+
+

@@ -150,3 +150,56 @@ data class OfflineQueueItem(
     val jsonPayload: String,
     val timestamp: Long
 )
+
+/**
+ * Detailed Attendance record returned to Admin oversight screens.
+ */
+data class AdminAttendanceRecord(
+    @SerializedName("timestamp") val timestamp: Any? = null,
+    @SerializedName("date") val date: String? = null,
+    @SerializedName("time") val time: String? = null,
+    @SerializedName("cadreId") val cadreId: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("cadreType") val cadreType: String? = null,
+    @SerializedName("activity") val activity: String? = null,
+    @SerializedName("remarks") val remarks: String? = null,
+    @SerializedName("photoLink") val photoLink: String? = null,
+    @SerializedName("latitude") val latitude: Double? = null,
+    @SerializedName("longitude") val longitude: Double? = null,
+    @SerializedName("accuracy") val accuracy: Float? = null
+)
+
+/**
+ * Detailed Feedback record returned to Admin review screens.
+ */
+data class AdminFeedbackRecord(
+    @SerializedName("timestamp") val timestamp: Any? = null,
+    @SerializedName("date") val date: String? = null,
+    @SerializedName("cadreId") val cadreId: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("cadreType") val cadreType: String? = null,
+    @SerializedName("training") val training: String? = null,
+    @SerializedName("trainer") val trainer: String? = null,
+    @SerializedName("contentRating") val contentRating: Int = 0,
+    @SerializedName("trainerRating") val trainerRating: Int = 0,
+    @SerializedName("usefulnessRating") val usefulnessRating: Int = 0,
+    @SerializedName("overallRating") val overallRating: Int = 0,
+    @SerializedName("suggestions") val suggestions: String? = null
+)
+
+/**
+ * Attendance Export result containing CSV text and summary for Admin.
+ */
+data class AttendanceExportResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("filename") val filename: String? = null,
+    @SerializedName("fromDate") val fromDate: String? = null,
+    @SerializedName("toDate") val toDate: String? = null,
+    @SerializedName("count") val count: Int = 0,
+    @SerializedName("csvContent") val csvContent: String? = null,
+    @SerializedName("sheetUrl") val sheetUrl: String? = null,
+    @SerializedName("data") val data: List<AdminAttendanceRecord>? = null
+)
+
+

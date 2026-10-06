@@ -73,9 +73,120 @@ ADMIN_USERS = [
     }
 ]
 
-# In-memory storage for test submissions
-ATTENDANCE_DB = []
-FEEDBACK_DB = []
+# In-memory storage with realistic initial submissions for Admin Oversight
+today_str = datetime.datetime.now().strftime("%Y-%m-%d")
+yesterday_str = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+
+ATTENDANCE_DB = [
+    {
+        "date": yesterday_str,
+        "time": "10:15:00",
+        "cadreId": "FMT101",
+        "name": "Lakshmi Devi",
+        "cadreType": "FMT",
+        "activity": "Attend Meeting",
+        "remarks": "Gram Panchayat monthly review on organic certification & Subhash Palekar methods",
+        "photoLink": "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?auto=format&fit=crop&w=600&q=80",
+        "latitude": 14.6820,
+        "longitude": 77.6010,
+        "accuracy": 5.2
+    },
+    {
+        "date": yesterday_str,
+        "time": "14:40:00",
+        "cadreId": "ICRP05",
+        "name": "Ramesh Naidu",
+        "cadreType": "ICRP",
+        "activity": "Field Visit",
+        "remarks": "Bio-resource input center inspection and Ghanajeevamrit storage audit",
+        "photoLink": "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80",
+        "latitude": 15.8290,
+        "longitude": 78.0380,
+        "accuracy": 4.1
+    },
+    {
+        "date": today_str,
+        "time": "09:30:15",
+        "cadreId": "FMT101",
+        "name": "Lakshmi Devi",
+        "cadreType": "FMT",
+        "activity": "Field Visit",
+        "remarks": "Demonstrated Jeevamrit concoction & Navadhanya seed coating with 5 farmers in Chapiri",
+        "photoLink": "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=600&q=80",
+        "latitude": 14.6819,
+        "longitude": 77.6006,
+        "accuracy": 3.8
+    },
+    {
+        "date": today_str,
+        "time": "11:15:00",
+        "cadreId": "ICRP05",
+        "name": "Ramesh Naidu",
+        "cadreType": "ICRP",
+        "activity": "Attend Meeting",
+        "remarks": "Cluster review meeting with VO leaders and SHG members in Arekal village",
+        "photoLink": "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80",
+        "latitude": 15.8281,
+        "longitude": 78.0373,
+        "accuracy": 4.9
+    },
+    {
+        "date": today_str,
+        "time": "14:05:22",
+        "cadreId": "TICRP02",
+        "name": "Saraswathi Bai",
+        "cadreType": "T-ICRP",
+        "activity": "Field Visit",
+        "remarks": "PMDS (Pre-Monsoon Dry Sowing) 365-day green cover demo in Mundlapadu",
+        "photoLink": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=600&q=80",
+        "latitude": 15.3934,
+        "longitude": 79.0152,
+        "accuracy": 3.4
+    }
+]
+
+FEEDBACK_DB = [
+    {
+        "date": yesterday_str,
+        "cadreId": "TICRP02",
+        "name": "Saraswathi Bai",
+        "cadreType": "T-ICRP",
+        "training": "Natural Pest Management & Trap Crops",
+        "trainer": "Sri Ramanjaneyulu",
+        "contentRating": 5,
+        "trainerRating": 4,
+        "usefulnessRating": 5,
+        "overallRating": 5,
+        "suggestions": "Handbook in Telugu was very informative. Please conduct hands-on Neemasthram prep."
+    },
+    {
+        "date": today_str,
+        "cadreId": "FMT101",
+        "name": "Lakshmi Devi",
+        "cadreType": "FMT",
+        "training": "Navadhanya & Bio-inputs Masterclass",
+        "trainer": "Dr. Venkata Rao",
+        "contentRating": 5,
+        "trainerRating": 5,
+        "usefulnessRating": 5,
+        "overallRating": 5,
+        "suggestions": "Excellent practical demo on Brahmastram and Agniastram preparation."
+    },
+    {
+        "date": today_str,
+        "cadreId": "ICRP05",
+        "name": "Ramesh Naidu",
+        "cadreType": "ICRP",
+        "training": "PMDS 365 Days Green Cover Models",
+        "trainer": "Smt. K. Anitha",
+        "contentRating": 4,
+        "trainerRating": 5,
+        "usefulnessRating": 5,
+        "overallRating": 4,
+        "suggestions": "Requesting seed kits distribution earlier before monsoon onset in Adoni cluster."
+    }
+]
+
 
 def generate_token(user_id, role, name):
     header = base64.urlsafe_b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}).encode("utf-8")).decode("utf-8").rstrip("=")
@@ -116,6 +227,47 @@ def verify_token(token, required_role=None):
         return False, f"Access denied. Required role: {required_role}, user role: {payload_data.get('role')}", None
 
     return True, None, payload_data
+
+def generate_attendance_csv_and_records(from_date, to_date, activity="ALL", cadre_type="ALL"):
+    headers = [
+        "Date", "Time", "Cadre ID", "Cadre Name", "Cadre Type",
+        "Activity", "Remarks", "Latitude", "Longitude", "Accuracy (m)", "Photo URL"
+    ]
+    def escape_csv(val):
+        if val is None:
+            return '""'
+        s = str(val).replace('"', '""')
+        return f'"{s}"'
+
+    csv_lines = [",".join(escape_csv(h) for h in headers)]
+    records = []
+
+    for a in ATTENDANCE_DB:
+        r_date = a.get("date", "")
+        if r_date < from_date or r_date > to_date:
+            continue
+        if activity and activity != "ALL" and a.get("activity", "").lower() != activity.lower():
+            continue
+        if cadre_type and cadre_type != "ALL" and a.get("cadreType", "").upper() != cadre_type.upper():
+            continue
+
+        row = [
+            a.get("date", ""),
+            a.get("time", ""),
+            a.get("cadreId", ""),
+            a.get("name", ""),
+            a.get("cadreType", ""),
+            a.get("activity", ""),
+            a.get("remarks", ""),
+            a.get("latitude", ""),
+            a.get("longitude", ""),
+            a.get("accuracy", ""),
+            a.get("photoLink", "")
+        ]
+        csv_lines.append(",".join(escape_csv(c) for c in row))
+        records.append(a)
+
+    return "\r\n".join(csv_lines), records
 
 class LocalDevHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -166,6 +318,32 @@ class LocalDevHandler(http.server.SimpleHTTPRequestHandler):
                     "meetingDone": my_meet
                 }
             })
+            return
+
+        # Direct CSV/Excel download
+        if path == "/api/export/attendance" or query.get("action", [""])[0] == "downloadAttendanceCsv":
+            token = query.get("token", [""])[0]
+            valid, err, user = verify_token(token, "ADMIN")
+            if not valid:
+                self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err}, status=403)
+                return
+
+            from_date = query.get("fromDate", ["2000-01-01"])[0]
+            to_date = query.get("toDate", ["2099-12-31"])[0]
+            f_act = query.get("activity", ["ALL"])[0]
+            f_type = query.get("cadreType", ["ALL"])[0]
+
+            csv_text, records = generate_attendance_csv_and_records(from_date, to_date, f_act, f_type)
+            filename = f"APCNF_Attendance_{from_date}_to_{to_date}.csv"
+            csv_bytes = csv_text.encode("utf-8")
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/csv; charset=utf-8")
+            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(csv_bytes)))
+            self.end_headers()
+            self.wfile.write(csv_bytes)
             return
 
         super().do_GET()
@@ -283,6 +461,135 @@ class LocalDevHandler(http.server.SimpleHTTPRequestHandler):
                         "totalAttendanceRecords": len(ATTENDANCE_DB) + 120,
                         "totalFeedbackRecords": len(FEEDBACK_DB) + 45
                     }
+                })
+                return
+
+            # 4b. Admin Attendance Filter & Search
+            if action == "getAdminAttendanceList":
+                token = payload.get("token")
+                valid, err, user = verify_token(token, "ADMIN")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err}, status=403)
+                    return
+
+                f_date = payload.get("date")
+                f_act = payload.get("activity")
+                f_type = payload.get("cadreType")
+                f_q = (payload.get("query") or "").strip().lower()
+                limit = min(max(int(payload.get("limit") or 100), 1), 200)
+
+                results = []
+                for a in reversed(ATTENDANCE_DB):
+                    if f_date and f_date != "ALL" and a.get("date") != f_date:
+                        continue
+                    if f_act and f_act != "ALL" and a.get("activity", "").lower() != f_act.lower():
+                        continue
+                    if f_type and f_type != "ALL" and a.get("cadreType", "").upper() != f_type.upper():
+                        continue
+                    if f_q:
+                        matched = (f_q in a.get("cadreId", "").lower() or
+                                   f_q in a.get("name", "").lower() or
+                                   f_q in a.get("remarks", "").lower())
+                        if not matched:
+                            continue
+                    results.append(a)
+                    if len(results) >= limit:
+                        break
+
+                self.send_json_response({"success": True, "count": len(results), "data": results})
+                return
+
+            # 4c. Admin Feedback Filter & Search
+            if action == "getAdminFeedbackList":
+                token = payload.get("token")
+                valid, err, user = verify_token(token, "ADMIN")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err}, status=403)
+                    return
+
+                f_type = payload.get("cadreType")
+                f_rating = payload.get("minRating")
+                f_q = (payload.get("query") or "").strip().lower()
+                limit = min(max(int(payload.get("limit") or 100), 1), 200)
+
+                results = []
+                for f in reversed(FEEDBACK_DB):
+                    if f_type and f_type != "ALL" and f.get("cadreType", "").upper() != f_type.upper():
+                        continue
+                    if f_rating and f_rating != "ALL" and int(f.get("overallRating", 0)) < int(f_rating):
+                        continue
+                    if f_q:
+                        matched = (f_q in f.get("cadreId", "").lower() or
+                                   f_q in f.get("name", "").lower() or
+                                   f_q in f.get("training", "").lower() or
+                                   f_q in f.get("trainer", "").lower() or
+                                   f_q in f.get("suggestions", "").lower())
+                        if not matched:
+                            continue
+                    results.append(f)
+                    if len(results) >= limit:
+                        break
+
+                self.send_json_response({"success": True, "count": len(results), "data": results})
+                return
+
+            # 4d. Admin Cadres Directory Filter & Search
+            if action == "getAdminCadreList":
+                token = payload.get("token")
+                valid, err, user = verify_token(token, "ADMIN")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err}, status=403)
+                    return
+
+                f_type = payload.get("cadreType")
+                f_status = payload.get("status")
+                f_q = (payload.get("query") or "").strip().lower()
+
+                results = []
+                for c in CADRE_MASTER:
+                    if f_type and f_type != "ALL" and c.get("cadreType", "").upper() != f_type.upper():
+                        continue
+                    if f_status and f_status != "ALL" and c.get("status", "Active").lower() != f_status.lower():
+                        continue
+                    if f_q:
+                        matched = (f_q in c.get("cadreId", "").lower() or
+                                   f_q in c.get("name", "").lower() or
+                                   f_q in c.get("mobile", "") or
+                                   f_q in c.get("district", "").lower() or
+                                   f_q in c.get("mandal", "").lower() or
+                                   f_q in c.get("village", "").lower())
+                        if not matched:
+                            continue
+                    results.append(c)
+
+                self.send_json_response({"success": True, "count": len(results), "data": results})
+                return
+
+            # 4e. Admin Attendance Export (Date Range From & To)
+            if action == "exportAdminAttendance":
+                token = payload.get("token")
+                valid, err, user = verify_token(token, "ADMIN")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err}, status=403)
+                    return
+
+                from_date = payload.get("fromDate") or "2000-01-01"
+                to_date = payload.get("toDate") or "2099-12-31"
+                f_act = payload.get("activity") or "ALL"
+                f_type = payload.get("cadreType") or "ALL"
+
+                csv_text, records = generate_attendance_csv_and_records(from_date, to_date, f_act, f_type)
+                filename = f"APCNF_Attendance_{from_date}_to_{to_date}.csv"
+
+                self.send_json_response({
+                    "success": True,
+                    "filename": filename,
+                    "fromDate": from_date,
+                    "toDate": to_date,
+                    "count": len(records),
+                    "sheetUrl": "https://docs.google.com/spreadsheets/d/mock_apcnf_master_sheet",
+                    "csvContent": csv_text,
+                    "data": records
                 })
                 return
 

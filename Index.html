@@ -506,7 +506,8 @@
 
     <!-- View 3: Admin Portal Dashboard -->
     <div id="viewAdminApp" class="hidden">
-      <div class="card">
+      <!-- Admin Top Card -->
+      <div class="card" style="margin-bottom: 12px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
             <div class="card-title" style="margin-bottom: 2px;">🛡️ APCNF Admin Portal</div>
@@ -515,37 +516,46 @@
           <span class="badge" style="background: var(--accent-light); color: var(--accent);">ADMIN</span>
         </div>
 
-        <div style="margin-top: 18px;">
-          <div class="card-title" style="font-size: 15px;">📊 Statewide Overview Today</div>
-          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
-            <div class="stat-card">
-              <b id="adminStatTotalCadres">0</b>
-              <span>Total Cadres</span>
-            </div>
-            <div class="stat-card">
-              <b id="adminStatActiveCadres" style="color: var(--success);">0</b>
-              <span>Active Cadres</span>
-            </div>
+        <!-- Admin Sub-tabs -->
+        <div class="nav-tabs" style="margin-top: 14px; margin-bottom: 0;">
+          <button id="adminTabBtnOverview" class="tab-btn active" onclick="switchAdminTab('overview')">📊 Overview</button>
+          <button id="adminTabBtnAtt" class="tab-btn" onclick="switchAdminTab('att')">📍 Attendance</button>
+          <button id="adminTabBtnFb" class="tab-btn" onclick="switchAdminTab('fb')">📝 Feedback</button>
+          <button id="adminTabBtnCadres" class="tab-btn" onclick="switchAdminTab('cadres')">👥 Cadres</button>
+        </div>
+      </div>
+
+      <!-- Admin Tab 1: Overview -->
+      <div id="adminPanelOverview" class="card">
+        <div class="card-title" style="font-size: 15px;">📊 Statewide Overview Today</div>
+        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
+          <div class="stat-card">
+            <b id="adminStatTotalCadres">0</b>
+            <span>Total Cadres</span>
           </div>
-          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
-            <div class="stat-card">
-              <b id="adminStatField">0</b>
-              <span>Today Field Visits</span>
-            </div>
-            <div class="stat-card">
-              <b id="adminStatMeeting" style="color: var(--accent);">0</b>
-              <span>Today Meetings</span>
-            </div>
+          <div class="stat-card">
+            <b id="adminStatActiveCadres" style="color: var(--success);">0</b>
+            <span>Active Cadres</span>
           </div>
-          <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
-            <div class="stat-card">
-              <b id="adminStatFeedback">0</b>
-              <span>Total Feedbacks</span>
-            </div>
-            <div class="stat-card">
-              <b id="adminStatAvgRating" style="color: var(--accent);">0.0 ★</b>
-              <span>Average Rating</span>
-            </div>
+        </div>
+        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 8px;">
+          <div class="stat-card">
+            <b id="adminStatField">0</b>
+            <span>Today Field Visits</span>
+          </div>
+          <div class="stat-card">
+            <b id="adminStatMeeting" style="color: var(--accent);">0</b>
+            <span>Today Meetings</span>
+          </div>
+        </div>
+        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="stat-card">
+            <b id="adminStatFeedback">0</b>
+            <span>Total Feedbacks</span>
+          </div>
+          <div class="stat-card">
+            <b id="adminStatAvgRating" style="color: var(--accent);">0.0 ★</b>
+            <span>Average Rating</span>
           </div>
         </div>
 
@@ -555,12 +565,120 @@
         </div>
 
         <button class="btn btn-secondary" onclick="loadAdminDashboard()" style="margin-top: 20px;">
-          🔄 Refresh Admin Data
+          🔄 Refresh Overview Data
         </button>
-
         <button class="btn btn-secondary" style="margin-top: 10px; color: var(--danger); border-color: var(--danger);" onclick="logout()">
           🚪 Logout / లాగౌట్
         </button>
+      </div>
+
+      <!-- Admin Tab 2: Attendance Records -->
+      <div id="adminPanelAtt" class="card hidden">
+        <div class="card-title" style="font-size: 15px;">📍 Attendance Records & Evidence</div>
+        
+        <input id="inpAdminAttSearch" placeholder="Search by name, ID, or remarks..." style="margin-top: 8px;">
+        
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <select id="selAdminAttActivity" style="flex: 1;">
+            <option value="ALL">All Activities</option>
+            <option value="Field Visit">Field Visit</option>
+            <option value="Attend Meeting">Attend Meeting</option>
+          </select>
+          <select id="selAdminAttCadreType" style="flex: 1;">
+            <option value="ALL">All Cadre Types</option>
+            <option value="FMT">FMT</option>
+            <option value="ICRP">ICRP</option>
+            <option value="T-ICRP">T-ICRP</option>
+          </select>
+        </div>
+
+        <!-- Date Range Filter & Excel/CSV Export Section -->
+        <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 12px;">
+          <div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
+            📅 Date Range Filter &amp; Export / తేదీల పరిధి:
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="flex: 1;">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">From Date / ప్రారంభం:</span>
+              <input id="inpAdminFromDate" type="date" style="padding: 8px 10px; font-size: 13px; margin-top: 2px;">
+            </div>
+            <div style="flex: 1;">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">To Date / ముగింపు:</span>
+              <input id="inpAdminToDate" type="date" style="padding: 8px 10px; font-size: 13px; margin-top: 2px;">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="btn" style="margin-top: 0; flex: 1; padding: 10px; font-size: 13px;" onclick="loadAdminAttendanceList()">
+              🔍 Search
+            </button>
+            <button class="btn btn-secondary" style="margin-top: 0; flex: 1.3; padding: 10px; font-size: 13px; background: #059669; color: white; border-color: #059669;" onclick="exportAdminAttendanceCsv()">
+              📥 Export Excel / CSV
+            </button>
+          </div>
+        </div>
+
+        <div id="adminAttExportMsg" class="msg-banner" style="margin-top: 10px;"></div>
+
+        <div id="adminAttCount" style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 16px;"></div>
+        <div id="adminAttList" style="margin-top: 10px;"></div>
+      </div>
+
+      <!-- Admin Tab 3: Feedback Reviews -->
+      <div id="adminPanelFb" class="card hidden">
+        <div class="card-title" style="font-size: 15px;">📝 Feedback & Quality Reviews</div>
+
+        <input id="inpAdminFbSearch" placeholder="Search topic, trainer, cadre, or suggestions..." style="margin-top: 8px;">
+
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <select id="selAdminFbCadreType" style="flex: 1;">
+            <option value="ALL">All Cadre Types</option>
+            <option value="FMT">FMT</option>
+            <option value="ICRP">ICRP</option>
+            <option value="T-ICRP">T-ICRP</option>
+          </select>
+          <select id="selAdminFbRating" style="flex: 1;">
+            <option value="ALL">All Ratings</option>
+            <option value="5">5 Stars Only</option>
+            <option value="4">4+ Stars</option>
+            <option value="3">3+ Stars</option>
+          </select>
+        </div>
+
+        <button class="btn" style="margin-top: 12px;" onclick="loadAdminFeedbackList()">
+          🔍 Filter Reviews
+        </button>
+
+        <div id="adminFbCount" style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 16px;"></div>
+        <div id="adminFbList" style="margin-top: 10px;"></div>
+      </div>
+
+      <!-- Admin Tab 4: Cadre Directory -->
+      <div id="adminPanelCadres" class="card hidden">
+        <div class="card-title" style="font-size: 15px;">👥 Master Cadre Directory</div>
+
+        <input id="inpAdminCadreSearch" placeholder="Search name, ID, phone, district, mandal..." style="margin-top: 8px;">
+
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <select id="selAdminCadreType" style="flex: 1;">
+            <option value="ALL">All Cadre Types</option>
+            <option value="FMT">FMT</option>
+            <option value="ICRP">ICRP</option>
+            <option value="T-ICRP">T-ICRP</option>
+          </select>
+          <select id="selAdminCadreStatus" style="flex: 1;">
+            <option value="ALL">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <button class="btn" style="margin-top: 12px;" onclick="loadAdminCadreList()">
+          🔍 Filter Cadres
+        </button>
+
+        <div id="adminCadreCount" style="font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 16px;"></div>
+        <div id="adminCadreList" style="margin-top: 10px;"></div>
       </div>
     </div>
 
@@ -832,6 +950,36 @@
       loadAdminDashboard();
     }
 
+    function switchAdminTab(tab) {
+      document.getElementById('adminPanelOverview').classList.add('hidden');
+      document.getElementById('adminPanelAtt').classList.add('hidden');
+      document.getElementById('adminPanelFb').classList.add('hidden');
+      document.getElementById('adminPanelCadres').classList.add('hidden');
+
+      document.getElementById('adminTabBtnOverview').classList.remove('active');
+      document.getElementById('adminTabBtnAtt').classList.remove('active');
+      document.getElementById('adminTabBtnFb').classList.remove('active');
+      document.getElementById('adminTabBtnCadres').classList.remove('active');
+
+      if (tab === 'overview') {
+        document.getElementById('adminPanelOverview').classList.remove('hidden');
+        document.getElementById('adminTabBtnOverview').classList.add('active');
+        loadAdminDashboard();
+      } else if (tab === 'att') {
+        document.getElementById('adminPanelAtt').classList.remove('hidden');
+        document.getElementById('adminTabBtnAtt').classList.add('active');
+        loadAdminAttendanceList();
+      } else if (tab === 'fb') {
+        document.getElementById('adminPanelFb').classList.remove('hidden');
+        document.getElementById('adminTabBtnFb').classList.add('active');
+        loadAdminFeedbackList();
+      } else if (tab === 'cadres') {
+        document.getElementById('adminPanelCadres').classList.remove('hidden');
+        document.getElementById('adminTabBtnCadres').classList.add('active');
+        loadAdminCadreList();
+      }
+    }
+
     function loadAdminDashboard() {
       if (!currentToken) return;
       fetch('/exec', {
@@ -870,6 +1018,7 @@
                   <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
                     ID: ${item.cadreId} • Time: ${item.time || ''} • ${item.remarks ? 'Remarks: ' + item.remarks : ''}
                   </div>
+                  ${item.photoLink ? `<a href="${item.photoLink}" target="_blank" style="font-size: 11px; color: var(--primary); font-weight: 600; text-decoration: none; display: inline-block; margin-top: 4px;">📸 View Photo</a>` : ''}
                 `;
                 listEl.appendChild(row);
               });
@@ -880,6 +1029,281 @@
           console.error('Failed to load admin dashboard:', err);
         });
     }
+
+    function exportAdminAttendanceCsv() {
+      if (!currentToken) return;
+      const fromDate = document.getElementById('inpAdminFromDate').value.trim();
+      const toDate = document.getElementById('inpAdminToDate').value.trim();
+      const act = document.getElementById('selAdminAttActivity').value;
+      const type = document.getElementById('selAdminAttCadreType').value;
+      const msg = document.getElementById('adminAttExportMsg');
+
+      showMsg(msg, 'Generating Excel/CSV export...', 'info');
+
+      const payload = {
+        action: 'exportAdminAttendance',
+        token: currentToken
+      };
+      if (fromDate) payload.fromDate = fromDate;
+      if (toDate) payload.toDate = toDate;
+      if (act !== 'ALL') payload.activity = act;
+      if (type !== 'ALL') payload.cadreType = type;
+
+      fetch('/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success && res.csvContent) {
+            // Trigger automatic browser download as CSV/Excel file with UTF-8 BOM
+            const blob = new Blob(["\uFEFF" + res.csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', res.filename || 'APCNF_Attendance_Export.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showMsg(msg, `✓ Successfully exported ${res.count} records (${res.fromDate} to ${res.toDate}) to "${res.filename}"!`, 'success');
+          } else {
+            showMsg(msg, res.message || 'Export failed.', 'error');
+          }
+        })
+        .catch(err => {
+          showMsg(msg, 'Export error: ' + err.message, 'error');
+        });
+    }
+
+    function loadAdminAttendanceList() {
+      if (!currentToken) return;
+      const q = document.getElementById('inpAdminAttSearch').value.trim();
+      const act = document.getElementById('selAdminAttActivity').value;
+      const type = document.getElementById('selAdminAttCadreType').value;
+      const fromDate = document.getElementById('inpAdminFromDate').value.trim();
+      const toDate = document.getElementById('inpAdminToDate').value.trim();
+
+      const payload = { action: 'getAdminAttendanceList', token: currentToken };
+      if (q) payload.query = q;
+      if (act !== 'ALL') payload.activity = act;
+      if (type !== 'ALL') payload.cadreType = type;
+      if (fromDate) payload.fromDate = fromDate;
+      if (toDate) payload.toDate = toDate;
+
+      const countEl = document.getElementById('adminAttCount');
+      const listEl = document.getElementById('adminAttList');
+      countEl.innerText = 'Searching attendance records...';
+
+      fetch('/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success && res.data) {
+            const list = res.data;
+            countEl.innerText = `Showing ${list.length} attendance record(s)`;
+            listEl.innerHTML = '';
+            if (list.length === 0) {
+              listEl.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No attendance records found matching filters.</p>';
+              return;
+            }
+            list.forEach(item => {
+              const card = document.createElement('div');
+              card.style.background = 'var(--bg)';
+              card.style.padding = '14px';
+              card.style.borderRadius = '12px';
+              card.style.marginBottom = '10px';
+              card.style.border = '1px solid var(--border)';
+              
+              const mapsUrl = item.latitude && item.longitude ? `https://www.google.com/maps?q=${item.latitude},${item.longitude}` : '';
+
+              card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px; color: var(--primary);">
+                      ${item.name || 'Cadre'} <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 6px;">${item.cadreType || 'FMT'}</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                      ID: <b>${item.cadreId}</b> • Date: ${item.date || ''} • Time: ${item.time || ''}
+                    </div>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: ${item.activity === 'Field Visit' ? '#E0F2FE' : '#FEF3C7'}; color: ${item.activity === 'Field Visit' ? '#0369A1' : '#B45309'};">
+                    ${item.activity || 'Field Visit'}
+                  </span>
+                </div>
+                ${item.remarks ? `<div style="font-size: 12px; color: var(--text); margin-top: 6px;"><b>Remarks:</b> ${item.remarks}</div>` : ''}
+                ${item.latitude && item.longitude ? `
+                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                    📍 GPS: ${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)} ${item.accuracy ? `(±${Math.round(item.accuracy)}m)` : ''}
+                  </div>
+                ` : ''}
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  ${mapsUrl ? `<a href="${mapsUrl}" target="_blank" class="btn btn-secondary" style="margin-top: 0; padding: 6px 10px; font-size: 11px; width: auto; text-decoration: none;">🗺️ Google Maps</a>` : ''}
+                  ${item.photoLink ? `<a href="${item.photoLink}" target="_blank" class="btn btn-secondary" style="margin-top: 0; padding: 6px 10px; font-size: 11px; width: auto; text-decoration: none; color: var(--accent); border-color: var(--accent);">📸 Photo Evidence</a>` : ''}
+                </div>
+              `;
+              listEl.appendChild(card);
+            });
+          } else {
+            countEl.innerText = res.message || 'Failed to load attendance.';
+          }
+        })
+        .catch(err => {
+          countEl.innerText = 'Error loading records: ' + err.message;
+        });
+    }
+
+    function loadAdminFeedbackList() {
+      if (!currentToken) return;
+      const q = document.getElementById('inpAdminFbSearch').value.trim();
+      const type = document.getElementById('selAdminFbCadreType').value;
+      const rating = document.getElementById('selAdminFbRating').value;
+
+      const payload = { action: 'getAdminFeedbackList', token: currentToken };
+      if (q) payload.query = q;
+      if (type !== 'ALL') payload.cadreType = type;
+      if (rating !== 'ALL') payload.minRating = Number(rating);
+
+      const countEl = document.getElementById('adminFbCount');
+      const listEl = document.getElementById('adminFbList');
+      countEl.innerText = 'Searching feedback reviews...';
+
+      fetch('/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success && res.data) {
+            const list = res.data;
+            countEl.innerText = `Showing ${list.length} feedback review(s)`;
+            listEl.innerHTML = '';
+            if (list.length === 0) {
+              listEl.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No feedback reviews found matching filters.</p>';
+              return;
+            }
+            list.forEach(item => {
+              const card = document.createElement('div');
+              card.style.background = 'var(--bg)';
+              card.style.padding = '14px';
+              card.style.borderRadius = '12px';
+              card.style.marginBottom = '10px';
+              card.style.border = '1px solid var(--border)';
+
+              const stars = '★'.repeat(item.overallRating || 5) + '☆'.repeat(5 - (item.overallRating || 5));
+
+              card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div style="font-weight: 700; font-size: 14px; color: var(--primary);">
+                    📝 ${item.training || 'Training Session'}
+                  </div>
+                  <span style="font-size: 13px; color: var(--accent); font-weight: 700;">
+                    ${stars} (${item.overallRating || 5}/5)
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                  Trainer: <b>${item.trainer || 'Resource Person'}</b> • Date: ${item.date || ''}
+                </div>
+                <div style="font-size: 12px; color: var(--text); margin-top: 4px;">
+                  Submitted by: <b>${item.name || 'Cadre'}</b> (${item.cadreType || 'FMT'}, ID: ${item.cadreId || ''})
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                  Content: ${item.contentRating || 0}★ • Delivery: ${item.trainerRating || 0}★ • Usefulness: ${item.usefulnessRating || 0}★
+                </div>
+                ${item.suggestions ? `<div style="font-size: 12px; color: var(--text); font-style: italic; margin-top: 6px; background: white; padding: 8px; border-radius: 8px; border: 1px dashed var(--border);">"${item.suggestions}"</div>` : ''}
+              `;
+              listEl.appendChild(card);
+            });
+          } else {
+            countEl.innerText = res.message || 'Failed to load feedback.';
+          }
+        })
+        .catch(err => {
+          countEl.innerText = 'Error loading reviews: ' + err.message;
+        });
+    }
+
+    function loadAdminCadreList() {
+      if (!currentToken) return;
+      const q = document.getElementById('inpAdminCadreSearch').value.trim();
+      const type = document.getElementById('selAdminCadreType').value;
+      const status = document.getElementById('selAdminCadreStatus').value;
+
+      const payload = { action: 'getAdminCadreList', token: currentToken };
+      if (q) payload.query = q;
+      if (type !== 'ALL') payload.cadreType = type;
+      if (status !== 'ALL') payload.status = status;
+
+      const countEl = document.getElementById('adminCadreCount');
+      const listEl = document.getElementById('adminCadreList');
+      countEl.innerText = 'Searching cadre directory...';
+
+      fetch('/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success && res.data) {
+            const list = res.data;
+            countEl.innerText = `Showing ${list.length} cadre(s)`;
+            listEl.innerHTML = '';
+            if (list.length === 0) {
+              listEl.innerHTML = '<p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No cadres found matching criteria.</p>';
+              return;
+            }
+            list.forEach(item => {
+              const card = document.createElement('div');
+              card.style.background = 'var(--bg)';
+              card.style.padding = '14px';
+              card.style.borderRadius = '12px';
+              card.style.marginBottom = '10px';
+              card.style.border = '1px solid var(--border)';
+
+              const isAct = String(item.status || 'Active').toLowerCase() === 'active';
+
+              card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px; color: var(--primary);">
+                      ${item.name} <span style="font-size: 11px; background: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 6px;">${item.cadreType}</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                      ID: <b>${item.cadreId}</b> • Mobile: <b>${item.mobile}</b>
+                    </div>
+                  </div>
+                  <span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: ${isAct ? '#DCFCE7' : '#FEE2E2'}; color: ${isAct ? '#15803D' : '#B91C1C'};">
+                    ${isAct ? '● Active' : '○ Inactive'}
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: var(--text); margin-top: 6px;">
+                  📍 ${item.village || ''}, ${item.mandal || ''}, ${item.district || ''}
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                  VO: ${item.vo || 'N/A'}
+                </div>
+                <div style="margin-top: 8px;">
+                  <a href="tel:${item.mobile}" class="btn btn-secondary" style="margin-top: 0; padding: 6px 12px; font-size: 11px; width: auto; display: inline-block; text-decoration: none;">📞 Call Cadre</a>
+                </div>
+              `;
+              listEl.appendChild(card);
+            });
+          } else {
+            countEl.innerText = res.message || 'Failed to load cadres.';
+          }
+        })
+        .catch(err => {
+          countEl.innerText = 'Error loading directory: ' + err.message;
+        });
+    }
+
 
     function acquireGPS() {
       const status = document.getElementById('gpsStatusText');

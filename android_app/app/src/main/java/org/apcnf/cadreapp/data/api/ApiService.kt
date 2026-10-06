@@ -5,8 +5,12 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import com.google.gson.reflect.TypeToken
+import org.apcnf.cadreapp.data.model.AdminAttendanceRecord
 import org.apcnf.cadreapp.data.model.AdminDashboardData
+import org.apcnf.cadreapp.data.model.AdminFeedbackRecord
 import org.apcnf.cadreapp.data.model.AdminUser
+import org.apcnf.cadreapp.data.model.AttendanceExportResponse
 import org.apcnf.cadreapp.data.model.AttendanceRequest
 import org.apcnf.cadreapp.data.model.AuthResponse
 import org.apcnf.cadreapp.data.model.Cadre
@@ -123,6 +127,157 @@ class ApiService(private val serverUrl: String) {
             Result.failure(e)
         }
     }
+
+    /**
+     * Fetches filtered attendance records for Admin oversight.
+     */
+    suspend fun getAdminAttendanceList(
+        token: String,
+        date: String? = null,
+        fromDate: String? = null,
+        toDate: String? = null,
+        activity: String? = null,
+        cadreType: String? = null,
+        query: String? = null
+    ): Result<List<AdminAttendanceRecord>> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("action", "getAdminAttendanceList")
+                put("token", token)
+                if (!date.isNullOrEmpty()) put("date", date)
+                if (!fromDate.isNullOrEmpty()) put("fromDate", fromDate)
+                if (!toDate.isNullOrEmpty()) put("toDate", toDate)
+                if (!activity.isNullOrEmpty()) put("activity", activity)
+                if (!cadreType.isNullOrEmpty()) put("cadreType", cadreType)
+                if (!query.isNullOrEmpty()) put("query", query)
+            }.toString()
+
+            val responseBody = postJson(payload)
+            val json = JSONObject(responseBody)
+            val success = json.optBoolean("success", false)
+
+            if (success) {
+                val dataArr = json.optJSONArray("data") ?: org.json.JSONArray()
+                val type = object : TypeToken<List<AdminAttendanceRecord>>() {}.type
+                val records: List<AdminAttendanceRecord> = ApiClient.gson.fromJson(dataArr.toString(), type)
+                Result.success(records)
+            } else {
+                val msg = json.optString("message", "Failed to fetch admin attendance records.")
+                Result.failure(Exception(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Exports attendance records within a Date Range to CSV/Excel format for Admin download.
+     */
+    suspend fun exportAdminAttendance(
+        token: String,
+        fromDate: String? = null,
+        toDate: String? = null,
+        activity: String? = null,
+        cadreType: String? = null
+    ): Result<AttendanceExportResponse> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("action", "exportAdminAttendance")
+                put("token", token)
+                if (!fromDate.isNullOrEmpty()) put("fromDate", fromDate)
+                if (!toDate.isNullOrEmpty()) put("toDate", toDate)
+                if (!activity.isNullOrEmpty()) put("activity", activity)
+                if (!cadreType.isNullOrEmpty()) put("cadreType", cadreType)
+            }.toString()
+
+            val responseBody = postJson(payload)
+            val json = JSONObject(responseBody)
+            val success = json.optBoolean("success", false)
+
+            if (success) {
+                val exportRes = ApiClient.gson.fromJson(responseBody, AttendanceExportResponse::class.java)
+                Result.success(exportRes)
+            } else {
+                val msg = json.optString("message", "Failed to export attendance records.")
+                Result.failure(Exception(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Fetches filtered feedback records for Admin review.
+     */
+    suspend fun getAdminFeedbackList(
+        token: String,
+        cadreType: String? = null,
+        minRating: Int? = null,
+        query: String? = null
+    ): Result<List<AdminFeedbackRecord>> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("action", "getAdminFeedbackList")
+                put("token", token)
+                if (!cadreType.isNullOrEmpty()) put("cadreType", cadreType)
+                if (minRating != null && minRating > 0) put("minRating", minRating)
+                if (!query.isNullOrEmpty()) put("query", query)
+            }.toString()
+
+            val responseBody = postJson(payload)
+            val json = JSONObject(responseBody)
+            val success = json.optBoolean("success", false)
+
+            if (success) {
+                val dataArr = json.optJSONArray("data") ?: org.json.JSONArray()
+                val type = object : TypeToken<List<AdminFeedbackRecord>>() {}.type
+                val records: List<AdminFeedbackRecord> = ApiClient.gson.fromJson(dataArr.toString(), type)
+                Result.success(records)
+            } else {
+                val msg = json.optString("message", "Failed to fetch admin feedback records.")
+                Result.failure(Exception(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Fetches master cadre directory for Admin management.
+     */
+    suspend fun getAdminCadreList(
+        token: String,
+        cadreType: String? = null,
+        status: String? = null,
+        query: String? = null
+    ): Result<List<Cadre>> = withContext(Dispatchers.IO) {
+        try {
+            val payload = JSONObject().apply {
+                put("action", "getAdminCadreList")
+                put("token", token)
+                if (!cadreType.isNullOrEmpty()) put("cadreType", cadreType)
+                if (!status.isNullOrEmpty()) put("status", status)
+                if (!query.isNullOrEmpty()) put("query", query)
+            }.toString()
+
+            val responseBody = postJson(payload)
+            val json = JSONObject(responseBody)
+            val success = json.optBoolean("success", false)
+
+            if (success) {
+                val dataArr = json.optJSONArray("data") ?: org.json.JSONArray()
+                val type = object : TypeToken<List<Cadre>>() {}.type
+                val cadres: List<Cadre> = ApiClient.gson.fromJson(dataArr.toString(), type)
+                Result.success(cadres)
+            } else {
+                val msg = json.optString("message", "Failed to fetch admin cadres.")
+                Result.failure(Exception(msg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
     /**
      * Submits daily attendance record with signed Cadre session token.
