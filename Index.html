@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>APCNF Cadre Attendance & Feedback</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0F683E;
+      --primary-dark: #0A4B2C;
+      --primary-light: #E8F5ED;
+      --accent: #F59E0B;
+      --accent-light: #FEF3C7;
+      --success: #16A34A;
+      --danger: #DC2626;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --radius: 16px;
+      --shadow: 0 4px 16px rgba(15, 104, 62, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 16px rgba(10, 75, 44, 0.2);
+    }
+
+    .header-content {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-titles h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .header-titles p {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 14px 0 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 13px 15px;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 15px;
+      font-family: inherit;
+      background: #FFFFFF;
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 104, 62, 0.12);
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { background: var(--primary-dark); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover { background: var(--primary-light); }
+
+    .nav-tabs {
+      display: flex;
+      background: #EDF2F7;
+      padding: 4px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .msg-banner {
+      padding: 12px 14px;
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .msg-banner.success {
+      background: #DCFCE7;
+      color: #166534;
+      border: 1px solid #BBF7D0;
+      display: block;
+    }
+
+    .msg-banner.error {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 1px solid #FECACA;
+      display: block;
+    }
+
+    .msg-banner.info {
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+      display: block;
+    }
+
+    .gps-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 12px;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .photo-preview {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-top: 10px;
+      display: none;
+      border: 1px solid var(--border);
+    }
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .stars {
+      display: flex;
+      gap: 4px;
+    }
+
+    .star {
+      font-size: 24px;
+      cursor: pointer;
+      color: #CBD5E1;
+      transition: color 0.15s;
+    }
+
+    .star.active { color: var(--accent); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .stat-card b {
+      display: block;
+      font-size: 22px;
+      color: var(--primary);
+    }
+
+    .stat-card span {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <div class="header-titles">
+        <h1>APCNF Cadre App</h1>
+        <p>ఆంధ్రప్రదేశ్ కమ్యూనిటీ ప్రకృతి వ్యవసాయం (RySS)</p>
+      </div>
+      <div id="headerBadge" class="hidden">
+        <span id="userRoleBadge" class="badge">FMT</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- View 1: Login Card -->
+    <div id="viewLogin" class="card">
+      <div class="card-title">🔐 Cadre Login / లాగిన్</div>
+      <p style="font-size: 13px; color: var(--text-muted);">Enter registered Cadre ID and Mobile Number</p>
+
+      <label>Cadre ID *</label>
+      <input id="inpCadreId" placeholder="e.g. FMT101 / ICRP05" autocapitalize="characters">
+
+      <label>Mobile Number *</label>
+      <input id="inpMobile" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit registered number">
+
+      <div id="loginMsg" class="msg-banner"></div>
+
+      <button id="btnLogin" class="btn" onclick="handleLogin()">
+        <span>Login / ప్రవేశించండి</span>
+      </button>
+    </div>
+
+    <!-- View 2: Main Application Tabs -->
+    <div id="viewApp" class="hidden">
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button id="tabAtt" class="tab-btn active" onclick="switchTab('att')">📍 Attendance</button>
+        <button id="tabFb" class="tab-btn" onclick="switchTab('fb')">📝 Feedback</button>
+        <button id="tabDash" class="tab-btn" onclick="switchTab('dash')">📊 Profile</button>
+      </div>
+
+      <!-- Tab Content: Attendance -->
+      <div id="panelAtt" class="card">
+        <div class="card-title">📍 Record Attendance / హాజరు నమోదు</div>
+
+        <label>Activity / కార్యకలాపం *</label>
+        <select id="selActivity">
+          <option value="Field Visit">Field Visit / పొలం సందర్శన</option>
+          <option value="Attend Meeting">Attend Meeting / సమావేశం</option>
+        </select>
+
+        <label>Live Camera Photo / లైవ్ ఫోటో *</label>
+        <input id="filePhoto" type="file" accept="image/*" capture="environment" onchange="handlePhotoSelect(event)" style="display:none">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('filePhoto').click()">
+          📸 <span id="photoBtnLabel">Capture Photo / ఫోటో తీయండి</span>
+        </button>
+        <img id="imgPreview" class="photo-preview" alt="Attendance Photo Preview">
+
+        <label>GPS Location / లొకేషన్ *</label>
+        <div class="gps-box">
+          <div>
+            <div id="gpsStatusText" style="font-size: 13px; font-weight: 600;">Fetching GPS...</div>
+            <div id="gpsDetailsText" style="font-size: 11px; color: var(--text-muted);">Acquiring coordinates</div>
+          </div>
+          <button type="button" class="btn btn-secondary" style="width: auto; margin-top: 0; padding: 8px 12px; font-size: 12px;" onclick="acquireGPS()">🔄 Refresh</button>
+        </div>
+
+        <label>Remarks / వివరణ (Optional)</label>
+        <textarea id="txtRemarks" placeholder="Farmer names visited, topic discussed..."></textarea>
+
+        <div id="attMsg" class="msg-banner"></div>
+
+        <button id="btnSubmitAtt" class="btn" onclick="submitAttendance()">
+          <span>Submit Attendance / హాజరు సమర్పించు</span>
+        </button>
+      </div>
+
+      <!-- Tab Content: Feedback -->
+      <div id="panelFb" class="card hidden">
+        <div class="card-title">📝 Training / Meeting Feedback</div>
+
+        <label>Training / Meeting Topic *</label>
+        <input id="txtTraining" placeholder="e.g. Navadhanya, PMDS, Subhash Palekar natural methods">
+
+        <label>Trainer / Resource Person Name</label>
+        <input id="txtTrainer" placeholder="Trainer name">
+
+        <label style="margin-top: 18px;">Ratings (1 to 5 Stars):</label>
+        <div class="rating-row">
+          <span style="font-size: 13px; font-weight: 600;">Content Quality</span>
+          <div class="stars" data-field="contentRating">
+            <span class="star active" onclick="setStar('contentRating', 1)">★</span>
+            <span class="star active" onclick="setStar('contentRating', 2)">★</span>
+            <span class="star active" onclick="setStar('contentRating', 3)">★</span>
+            <span class="star active" onclick="setStar('contentRating', 4)">★</span>
+            <span class="star active" onclick="setStar('contentRating', 5)">★</span>
+          </div>
+        </div>
+
+        <div class="rating-row">
+          <span style="font-size: 13px; font-weight: 600;">Trainer Delivery</span>
+          <div class="stars" data-field="trainerRating">
+            <span class="star active" onclick="setStar('trainerRating', 1)">★</span>
+            <span class="star active" onclick="setStar('trainerRating', 2)">★</span>
+            <span class="star active" onclick="setStar('trainerRating', 3)">★</span>
+            <span class="star active" onclick="setStar('trainerRating', 4)">★</span>
+            <span class="star active" onclick="setStar('trainerRating', 5)">★</span>
+          </div>
+        </div>
+
+        <div class="rating-row">
+          <span style="font-size: 13px; font-weight: 600;">Field Usefulness</span>
+          <div class="stars" data-field="usefulnessRating">
+            <span class="star active" onclick="setStar('usefulnessRating', 1)">★</span>
+            <span class="star active" onclick="setStar('usefulnessRating', 2)">★</span>
+            <span class="star active" onclick="setStar('usefulnessRating', 3)">★</span>
+            <span class="star active" onclick="setStar('usefulnessRating', 4)">★</span>
+            <span class="star active" onclick="setStar('usefulnessRating', 5)">★</span>
+          </div>
+        </div>
+
+        <div class="rating-row">
+          <span style="font-size: 13px; font-weight: 600;">Overall Rating</span>
+          <div class="stars" data-field="overallRating">
+            <span class="star active" onclick="setStar('overallRating', 1)">★</span>
+            <span class="star active" onclick="setStar('overallRating', 2)">★</span>
+            <span class="star active" onclick="setStar('overallRating', 3)">★</span>
+            <span class="star active" onclick="setStar('overallRating', 4)">★</span>
+            <span class="star active" onclick="setStar('overallRating', 5)">★</span>
+          </div>
+        </div>
+
+        <label>Suggestions for Improvement / సలహాలు</label>
+        <textarea id="txtSuggestions" placeholder="What can be improved in future sessions?"></textarea>
+
+        <div id="fbMsg" class="msg-banner"></div>
+
+        <button id="btnSubmitFb" class="btn" onclick="submitFeedback()">
+          <span>Submit Feedback / అభిప్రాయం సమర్పించు</span>
+        </button>
+      </div>
+
+      <!-- Tab Content: Dashboard & Profile -->
+      <div id="panelDash" class="card hidden">
+        <div class="card-title">👤 Cadre Profile & Today's Summary</div>
+
+        <div style="background: var(--bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px;">
+          <h2 id="dashName" style="font-size: 18px; color: var(--text);">Cadre Name</h2>
+          <p id="dashMeta" style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">ID • Mobile</p>
+          <p id="dashLoc" style="font-size: 13px; color: var(--text); margin-top: 6px;">Village, Mandal, District</p>
+          <p id="dashVo" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">VO Name</p>
+        </div>
+
+        <div class="card-title">📊 Today's Activity Summary</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <b id="statField">0</b>
+            <span>Field Visits</span>
+          </div>
+          <div class="stat-card">
+            <b id="statMeeting">0</b>
+            <span>Meetings</span>
+          </div>
+          <div class="stat-card">
+            <b id="statFb">0</b>
+            <span>Feedbacks</span>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" style="margin-top: 24px; color: var(--danger); border-color: var(--danger);" onclick="logout()">
+          🚪 Logout / లాగౌట్
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <canvas id="compressCanvas" style="display:none"></canvas>
+
+  <script>
+    // Localhost Development Bridge: Automatically delegates to local server when running outside GAS iframe
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      window.google = {
+        script: {
+          run: {
+            _successHandler: null,
+            _failureHandler: null,
+            withSuccessHandler: function(fn) {
+              const clone = Object.create(this);
+              clone._successHandler = fn;
+              return clone;
+            },
+            withFailureHandler: function(fn) {
+              const clone = Object.create(this);
+              clone._failureHandler = fn;
+              return clone;
+            },
+            getCadre: function(id, mobile) {
+              fetch('/api/cadre?id=' + encodeURIComponent(id) + '&mobile=' + encodeURIComponent(mobile))
+                .then(r => r.json())
+                .then(res => {
+                  if (res.success && this._successHandler) this._successHandler(res.cadre);
+                  else if (!res.success && this._successHandler) this._successHandler(null);
+                })
+                .catch(err => {
+                  if (this._failureHandler) this._failureHandler(err);
+                });
+            },
+            saveAttendance: function(data) {
+              fetch('/api/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+              })
+                .then(r => r.json())
+                .then(res => {
+                  if (res.success && this._successHandler) this._successHandler(res);
+                  else if (!res.success && this._failureHandler) this._failureHandler(new Error(res.message));
+                })
+                .catch(err => {
+                  if (this._failureHandler) this._failureHandler(err);
+                });
+            },
+            saveFeedback: function(data) {
+              fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+              })
+                .then(r => r.json())
+                .then(res => {
+                  if (res.success && this._successHandler) this._successHandler(res);
+                  else if (!res.success && this._failureHandler) this._failureHandler(new Error(res.message));
+                })
+                .catch(err => {
+                  if (this._failureHandler) this._failureHandler(err);
+                });
+            },
+            getDashboard: function(cadreId) {
+              fetch('/api/dashboard?cadreId=' + encodeURIComponent(cadreId))
+                .then(r => r.json())
+                .then(res => {
+                  if (this._successHandler) this._successHandler(res);
+                })
+                .catch(err => {
+                  if (this._failureHandler) this._failureHandler(err);
+                });
+            }
+          }
+        }
+      };
+    }
+
+    let currentUser = null;
+    let currentCoords = null;
+    let compressedPhotoBase64 = null;
+    const ratings = { contentRating: 5, trainerRating: 5, usefulnessRating: 5, overallRating: 5 };
+
+    // Auto-restore session from sessionStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = sessionStorage.getItem('apcnf_user');
+      if (saved) {
+        try {
+          currentUser = JSON.parse(saved);
+          showApp();
+        } catch (e) {}
+      }
+    });
+
+    function setStar(field, value) {
+      ratings[field] = value;
+      const container = document.querySelector(`.stars[data-field="${field}"]`);
+      if (!container) return;
+      const stars = container.querySelectorAll('.star');
+      stars.forEach((star, index) => {
+        if (index < value) star.classList.add('active');
+        else star.classList.remove('active');
+      });
+    }
+
+    function switchTab(tab) {
+      document.getElementById('panelAtt').classList.add('hidden');
+      document.getElementById('panelFb').classList.add('hidden');
+      document.getElementById('panelDash').classList.add('hidden');
+
+      document.getElementById('tabAtt').classList.remove('active');
+      document.getElementById('tabFb').classList.remove('active');
+      document.getElementById('tabDash').classList.remove('active');
+
+      if (tab === 'att') {
+        document.getElementById('panelAtt').classList.remove('hidden');
+        document.getElementById('tabAtt').classList.add('active');
+      } else if (tab === 'fb') {
+        document.getElementById('panelFb').classList.remove('hidden');
+        document.getElementById('tabFb').classList.add('active');
+      } else if (tab === 'dash') {
+        document.getElementById('panelDash').classList.remove('hidden');
+        document.getElementById('tabDash').classList.add('active');
+        loadDashboard();
+      }
+    }
+
+    function handleLogin() {
+      const cadreId = document.getElementById('inpCadreId').value.trim();
+      const mobile = document.getElementById('inpMobile').value.trim();
+      const msg = document.getElementById('loginMsg');
+      const btn = document.getElementById('btnLogin');
+
+      if (!cadreId || !mobile) {
+        showMsg(msg, 'Please enter both Cadre ID and Mobile Number.', 'error');
+        return;
+      }
+
+      if (mobile.length !== 10) {
+        showMsg(msg, 'Please enter a valid 10-digit registered mobile number.', 'error');
+        return;
+      }
+
+      showMsg(msg, 'Verifying cadre credentials...', 'info');
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(cadre => {
+          btn.disabled = false;
+          if (!cadre) {
+            showMsg(msg, 'Cadre not found. Check Cadre ID and Mobile Number.', 'error');
+            return;
+          }
+          if (String(cadre.status || 'Active').toLowerCase() !== 'active') {
+            showMsg(msg, 'Cadre is inactive. Please contact Mandal Incharge.', 'error');
+            return;
+          }
+          currentUser = cadre;
+          sessionStorage.setItem('apcnf_user', JSON.stringify(cadre));
+          showApp();
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          showMsg(msg, err.message || 'Login verification failed.', 'error');
+        })
+        .getCadre(cadreId, mobile);
+    }
+
+    function showApp() {
+      document.getElementById('viewLogin').classList.add('hidden');
+      document.getElementById('viewApp').classList.remove('hidden');
+      document.getElementById('headerBadge').classList.remove('hidden');
+      document.getElementById('userRoleBadge').innerText = currentUser.cadreType;
+
+      document.getElementById('dashName').innerText = currentUser.name;
+      document.getElementById('dashMeta').innerText = `ID: ${currentUser.cadreId} • Mobile: ${currentUser.mobile} (${currentUser.cadreType})`;
+      document.getElementById('dashLoc').innerText = `${currentUser.village || ''}, ${currentUser.mandal || ''}, ${currentUser.district || ''}`;
+      document.getElementById('dashVo').innerText = `VO: ${currentUser.vo || 'N/A'}`;
+
+      acquireGPS();
+    }
+
+    function acquireGPS() {
+      const status = document.getElementById('gpsStatusText');
+      const details = document.getElementById('gpsDetailsText');
+
+      if (!navigator.geolocation) {
+        status.innerText = 'GPS not supported';
+        details.innerText = 'Browser does not support geolocation';
+        return;
+      }
+
+      status.innerText = 'Acquiring GPS location...';
+      details.innerText = 'Please keep device still';
+
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          currentCoords = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy
+          };
+          status.innerText = '✓ GPS Captured';
+          details.innerText = `Lat: ${pos.coords.latitude.toFixed(5)}, Lon: ${pos.coords.longitude.toFixed(5)} (±${Math.round(pos.coords.accuracy)}m)`;
+        },
+        err => {
+          status.innerText = 'GPS capture failed';
+          details.innerText = err.message || 'Please enable GPS permissions in browser';
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    }
+
+    // Client-side HTML5 Canvas Photo Compression (max 1024px, 75% JPEG)
+    function handlePhotoSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.getElementById('compressCanvas');
+          const maxDim = 1024;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG with 0.75 quality (~120KB-180KB)
+          compressedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
+
+          const preview = document.getElementById('imgPreview');
+          preview.src = compressedPhotoBase64;
+          preview.style.display = 'block';
+          document.getElementById('photoBtnLabel').innerText = 'Retake Photo / మళ్లీ తీయండి';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitAttendance() {
+      const msg = document.getElementById('attMsg');
+      const btn = document.getElementById('btnSubmitAtt');
+
+      if (!compressedPhotoBase64) {
+        showMsg(msg, 'Please take a live camera photo before submitting.', 'error');
+        return;
+      }
+
+      if (!currentCoords) {
+        showMsg(msg, 'GPS location is required. Please tap Refresh GPS.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      showMsg(msg, 'Submitting attendance to server...', 'info');
+
+      const data = {
+        ...currentUser,
+        activity: document.getElementById('selActivity').value,
+        remarks: document.getElementById('txtRemarks').value.trim(),
+        photoBase64: compressedPhotoBase64,
+        ...currentCoords
+      };
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled = false;
+          showMsg(msg, res.message || 'Attendance submitted successfully!', 'success');
+          compressedPhotoBase64 = null;
+          document.getElementById('imgPreview').style.display = 'none';
+          document.getElementById('txtRemarks').value = '';
+          document.getElementById('photoBtnLabel').innerText = 'Capture Photo / ఫోటో తీయండి';
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          showMsg(msg, err.message || 'Submission failed. Please retry.', 'error');
+        })
+        .saveAttendance(data);
+    }
+
+    function submitFeedback() {
+      const msg = document.getElementById('fbMsg');
+      const btn = document.getElementById('btnSubmitFb');
+      const training = document.getElementById('txtTraining').value.trim();
+
+      if (!training) {
+        showMsg(msg, 'Please enter the Training / Meeting Topic.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      showMsg(msg, 'Submitting feedback...', 'info');
+
+      const data = {
+        ...currentUser,
+        training: training,
+        trainer: document.getElementById('txtTrainer').value.trim(),
+        ...ratings,
+        suggestions: document.getElementById('txtSuggestions').value.trim()
+      };
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btn.disabled = false;
+          showMsg(msg, res.message || 'Feedback submitted successfully. Thank you!', 'success');
+          document.getElementById('txtTraining').value = '';
+          document.getElementById('txtTrainer').value = '';
+          document.getElementById('txtSuggestions').value = '';
+        })
+        .withFailureHandler(err => {
+          btn.disabled = false;
+          showMsg(msg, err.message || 'Failed to submit feedback.', 'error');
+        })
+        .saveFeedback(data);
+    }
+
+    function loadDashboard() {
+      if (!currentUser) return;
+      google.script.run
+        .withSuccessHandler(dash => {
+          if (!dash) return;
+          document.getElementById('statField').innerText = dash.totalFieldVisits || 0;
+          document.getElementById('statMeeting').innerText = dash.totalMeetings || 0;
+          document.getElementById('statFb').innerText = dash.totalFeedback || 0;
+        })
+        .getDashboard(currentUser.cadreId);
+    }
+
+    function showMsg(el, text, type) {
+      el.className = `msg-banner ${type}`;
+      el.innerText = text;
+    }
+
+    function logout() {
+      sessionStorage.removeItem('apcnf_user');
+      currentUser = null;
+      location.reload();
+    }
+  </script>
+</body>
+</html>

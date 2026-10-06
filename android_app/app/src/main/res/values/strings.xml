@@ -1,0 +1,61 @@
+<resources>
+    <string name="app_name">APCNF Cadre App</string>
+    <string name="app_subtitle">ఆంధ్రప్రదేశ్ కమ్యూనిటీ ప్రకృతి వ్యవసాయం (RySS)</string>
+    <string name="org_name">Andhra Pradesh Community Managed Natural Farming</string>
+
+    <!-- Login -->
+    <string name="login_title">Cadre Login / లాగిన్</string>
+    <string name="login_instruction">Enter your registered Cadre ID and Mobile Number</string>
+    <string name="cadre_id_hint">Cadre ID (e.g. FMT101 / ICRP05)</string>
+    <string name="mobile_hint">Registered Mobile (10 Digits)</string>
+    <string name="btn_login">Login / ప్రవేశించండి</string>
+    <string name="config_server_url">Configure Server URL / సర్వర్ లింక్</string>
+    <string name="server_url_hint">Google Apps Script Web App URL</string>
+    <string name="save_url">Save URL</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Navigation -->
+    <string name="nav_attendance">Attendance / హాజరు</string>
+    <string name="nav_feedback">Feedback / అభిప్రాయం</string>
+    <string name="nav_dashboard">Dashboard / డాష్‌బోర్డ్</string>
+
+    <!-- Attendance Form -->
+    <string name="attendance_title">Cadre Daily Attendance</string>
+    <string name="select_activity">Select Activity / కార్యకలాపం ఎంచుకోండి *</string>
+    <string name="activity_field_visit">Field Visit / పొలం సందర్శన</string>
+    <string name="activity_attend_meeting">Attend Meeting / సమావేశం</string>
+    <string name="photo_section_title">Mandatory Live Photo / లైవ్ ఫోటో *</string>
+    <string name="btn_take_photo">Capture Photo / ఫోటో తీయండి</string>
+    <string name="retake_photo">Retake Photo / మళ్లీ తీయండి</string>
+    <string name="location_section_title">GPS Location / లొకేషన్ *</string>
+    <string name="btn_refresh_gps">Refresh GPS / లొకేషన్ రీఫ్రెష్</string>
+    <string name="gps_waiting">Fetching accurate GPS coordinates...</string>
+    <string name="gps_captured_format">Lat: %.5f, Lon: %.5f (Accuracy: ±%.1f m)</string>
+    <string name="remarks_hint">Remarks / Comments (Optional)</string>
+    <string name="btn_submit_attendance">Submit Attendance / హాజరు నమోదు</string>
+
+    <!-- Feedback Form -->
+    <string name="feedback_title">Training / Meeting Feedback</string>
+    <string name="training_topic_hint">Training / Meeting Topic Name *</string>
+    <string name="trainer_name_hint">Trainer / Resource Person Name</string>
+    <string name="rating_content">Content Quality / శిక్షణ అంశం</string>
+    <string name="rating_trainer">Trainer Delivery / శిక్షకుని వివరణ</string>
+    <string name="rating_usefulness">Field Usefulness / ఉపయోగకరత</string>
+    <string name="rating_overall">Overall Rating / మొత్తం రేటింగ్</string>
+    <string name="suggestions_hint">Suggestions for Improvement / సలహాలు</string>
+    <string name="btn_submit_feedback">Submit Feedback / అభిప్రాయం సమర్పించండి</string>
+
+    <!-- Dashboard -->
+    <string name="profile_title">Cadre Profile</string>
+    <string name="today_summary">Today\'s Activity Status</string>
+    <string name="pending_sync">Offline Pending Submissions</string>
+    <string name="btn_sync_now">Sync Pending Records / సింక్ చేయండి</string>
+    <string name="btn_logout">Logout / లాగౌట్</string>
+
+    <!-- Validation & Errors -->
+    <string name="err_empty_login">Please enter both Cadre ID and Mobile Number.</string>
+    <string name="err_invalid_mobile">Please enter a valid 10-digit mobile number.</string>
+    <string name="err_photo_required">Please take a live photo before submitting attendance.</string>
+    <string name="err_gps_required">Please capture GPS location before submitting attendance.</string>
+    <string name="err_no_internet">No internet connection. Record saved to offline queue.</string>
+</resources>
