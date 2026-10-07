@@ -24,7 +24,7 @@ def send_request(payload):
 
 def main():
     print("==================================================")
-    print("PROJECT APCNF — RBAC PHASE 1 AUTOMATED TEST SUITE")
+    print("PROJECT APCNF — RBAC STRICT CADRE & ADMIN TEST SUITE")
     print("==================================================")
 
     test_results = []
@@ -75,14 +75,14 @@ def main():
     # ------------------------------------------------------------------
     # TEST 4: Unauthenticated user CANNOT access Admin APIs
     # ------------------------------------------------------------------
-    print("\n[TEST 4A] Testing Unauthenticated access (No Token)...")
+    print("\n[TEST 4A] Testing Unauthenticated access to Admin API (No Token)...")
     status, res = send_request({
         "action": "getAdminDashboard"
     })
     t4a_pass = (status in [401, 403] or res.get("success") is False)
     print(f"  Result (No Token): {'PASSED (Access Denied)' if t4a_pass else 'FAILED'}")
 
-    print("[TEST 4B] Testing Tampered / Invalid Token...")
+    print("[TEST 4B] Testing Tampered / Invalid Token on Admin API...")
     status, res = send_request({
         "action": "getAdminDashboard",
         "token": "fake.jwt.token_attempting_privilege_escalation"
@@ -101,7 +101,7 @@ def main():
     })
     dash_data = res.get("data", {})
     t5a_pass = (status == 200 and res.get("success") is True and "totalCadres" in dash_data)
-    print(f"  Result (Admin Dashboard): {'PASSED' if t5a_pass else 'FAILED'} (Total Cadres: {dash_data.get('totalCadres')}, Field Visits: {dash_data.get('todayFieldVisits')})")
+    print(f"  Result (Admin Dashboard): {'PASSED' if t5a_pass else 'FAILED'} (Total Cadres: {dash_data.get('totalCadres')})")
 
     print("[TEST 5B] Testing Admin All-Data API with valid Admin Token...")
     status, res = send_request({
@@ -114,9 +114,9 @@ def main():
     test_results.append(("5. Admin CAN access authorized Admin APIs", t5a_pass and t5b_pass))
 
     # ------------------------------------------------------------------
-    # TEST 6: Existing Cadre Attendance & Feedback still works
+    # TEST 6: Valid CADRE token on Cadre Endpoints -> ALLOWED
     # ------------------------------------------------------------------
-    print("\n[TEST 6A] Testing Cadre Attendance submission with Cadre Token...")
+    print("\n[TEST 6A] Testing Cadre Attendance submission with Valid Cadre Token...")
     status, res = send_request({
         "action": "saveAttendance",
         "token": cadre_token,
@@ -134,7 +134,7 @@ def main():
     t6a_pass = (status == 200 and res.get("success") is True)
     print(f"  Result (Attendance): {'PASSED' if t6a_pass else 'FAILED'} (Msg: {res.get('message')})")
 
-    print("[TEST 6B] Testing Cadre Feedback submission with Cadre Token...")
+    print("[TEST 6B] Testing Cadre Feedback submission with Valid Cadre Token...")
     status, res = send_request({
         "action": "saveFeedback",
         "token": cadre_token,
@@ -152,13 +152,156 @@ def main():
     })
     t6b_pass = (status == 200 and res.get("success") is True)
     print(f"  Result (Feedback): {'PASSED' if t6b_pass else 'FAILED'} (Msg: {res.get('message')})")
-    test_results.append(("6. Existing Cadre attendance & feedback flow intact", t6a_pass and t6b_pass))
+
+    print("[TEST 6C] Testing Cadre Dashboard fetch with Valid Cadre Token...")
+    status, res = send_request({
+        "action": "getDashboard",
+        "token": cadre_token,
+        "cadreId": "FMT101"
+    })
+    t6c_pass = (status == 200 and res.get("success") is True and "data" in res)
+    print(f"  Result (Dashboard): {'PASSED' if t6c_pass else 'FAILED'} (HasData: {'data' in res})")
+    test_results.append(("6. Valid CADRE token -> ALLOWED on Cadre endpoints", t6a_pass and t6b_pass and t6c_pass))
+
+    # ------------------------------------------------------------------
+    # TEST 7: No-Token Cadre request -> DENIED
+    # ------------------------------------------------------------------
+    print("\n[TEST 7A] Testing saveAttendance without token -> DENIED...")
+    status, res = send_request({
+        "action": "saveAttendance",
+        "cadreId": "FMT101",
+        "activity": "Field Visit"
+    })
+    t7a_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveAttendance no token): {'PASSED (Denied)' if t7a_pass else 'FAILED'}")
+
+    print("[TEST 7B] Testing saveFeedback without token -> DENIED...")
+    status, res = send_request({
+        "action": "saveFeedback",
+        "cadreId": "FMT101",
+        "training": "PMDS",
+        "overallRating": 5
+    })
+    t7b_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveFeedback no token): {'PASSED (Denied)' if t7b_pass else 'FAILED'}")
+
+    print("[TEST 7C] Testing getDashboard without token -> DENIED...")
+    status, res = send_request({
+        "action": "getDashboard",
+        "cadreId": "FMT101"
+    })
+    t7c_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (getDashboard no token): {'PASSED (Denied)' if t7c_pass else 'FAILED'}")
+    test_results.append(("7. No-token Cadre requests -> DENIED", t7a_pass and t7b_pass and t7c_pass))
+
+    # ------------------------------------------------------------------
+    # TEST 8: Fake/invalid token on Cadre requests -> DENIED
+    # ------------------------------------------------------------------
+    fake_token = "fake.invalid.cadre_token"
+    print("\n[TEST 8A] Testing saveAttendance with fake token -> DENIED...")
+    status, res = send_request({
+        "action": "saveAttendance",
+        "token": fake_token,
+        "cadreId": "FMT101",
+        "activity": "Field Visit"
+    })
+    t8a_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveAttendance fake token): {'PASSED (Denied)' if t8a_pass else 'FAILED'}")
+
+    print("[TEST 8B] Testing saveFeedback with fake token -> DENIED...")
+    status, res = send_request({
+        "action": "saveFeedback",
+        "token": fake_token,
+        "cadreId": "FMT101",
+        "training": "PMDS",
+        "overallRating": 5
+    })
+    t8b_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveFeedback fake token): {'PASSED (Denied)' if t8b_pass else 'FAILED'}")
+
+    print("[TEST 8C] Testing getDashboard with fake token -> DENIED...")
+    status, res = send_request({
+        "action": "getDashboard",
+        "token": fake_token,
+        "cadreId": "FMT101"
+    })
+    t8c_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (getDashboard fake token): {'PASSED (Denied)' if t8c_pass else 'FAILED'}")
+    test_results.append(("8. Fake/invalid token on Cadre requests -> DENIED", t8a_pass and t8b_pass and t8c_pass))
+
+    # ------------------------------------------------------------------
+    # TEST 9: Identity binding: Valid CADRE token + different cadreId -> DENIED
+    # ------------------------------------------------------------------
+    print("\n[TEST 9A] Testing saveAttendance with token for FMT101 but payload cadreId ICRP05 -> DENIED...")
+    status, res = send_request({
+        "action": "saveAttendance",
+        "token": cadre_token,
+        "cadreId": "ICRP05",  # Mismatched ID!
+        "activity": "Field Visit"
+    })
+    t9a_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveAttendance ID mismatch): {'PASSED (Denied)' if t9a_pass else 'FAILED'}")
+
+    print("[TEST 9B] Testing saveFeedback with token for FMT101 but payload cadreId ICRP05 -> DENIED...")
+    status, res = send_request({
+        "action": "saveFeedback",
+        "token": cadre_token,
+        "cadreId": "ICRP05",  # Mismatched ID!
+        "training": "PMDS",
+        "overallRating": 5
+    })
+    t9b_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveFeedback ID mismatch): {'PASSED (Denied)' if t9b_pass else 'FAILED'}")
+
+    print("[TEST 9C] Testing getDashboard with token for FMT101 but payload cadreId ICRP05 -> DENIED...")
+    status, res = send_request({
+        "action": "getDashboard",
+        "token": cadre_token,
+        "cadreId": "ICRP05"  # Mismatched ID!
+    })
+    t9c_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (getDashboard ID mismatch): {'PASSED (Denied)' if t9c_pass else 'FAILED'}")
+    test_results.append(("9. Valid CADRE token + different cadreId -> DENIED", t9a_pass and t9b_pass and t9c_pass))
+
+    # ------------------------------------------------------------------
+    # TEST 10: Valid ADMIN token calling Cadre-only endpoint -> DENIED
+    # ------------------------------------------------------------------
+    print("\n[TEST 10A] Testing saveAttendance with ADMIN token -> DENIED...")
+    status, res = send_request({
+        "action": "saveAttendance",
+        "token": admin_token,
+        "cadreId": "FMT101",
+        "activity": "Field Visit"
+    })
+    t10a_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveAttendance with Admin Token): {'PASSED (Denied)' if t10a_pass else 'FAILED'}")
+
+    print("[TEST 10B] Testing saveFeedback with ADMIN token -> DENIED...")
+    status, res = send_request({
+        "action": "saveFeedback",
+        "token": admin_token,
+        "cadreId": "FMT101",
+        "training": "PMDS",
+        "overallRating": 5
+    })
+    t10b_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (saveFeedback with Admin Token): {'PASSED (Denied)' if t10b_pass else 'FAILED'}")
+
+    print("[TEST 10C] Testing getDashboard with ADMIN token -> DENIED...")
+    status, res = send_request({
+        "action": "getDashboard",
+        "token": admin_token,
+        "cadreId": "FMT101"
+    })
+    t10c_pass = (status in [401, 403] or res.get("success") is False)
+    print(f"  Result (getDashboard with Admin Token): {'PASSED (Denied)' if t10c_pass else 'FAILED'}")
+    test_results.append(("10. Valid ADMIN token calling Cadre-only endpoint -> DENIED", t10a_pass and t10b_pass and t10c_pass))
 
     # ------------------------------------------------------------------
     # SUMMARY
     # ------------------------------------------------------------------
     print("\n" + "=" * 60)
-    print("RBAC PHASE 1 TEST SUMMARY")
+    print("RBAC & CADRE AUTHENTICATION TEST SUMMARY")
     print("=" * 60)
     all_ok = True
     for name, passed in test_results:
@@ -166,7 +309,9 @@ def main():
         if not passed:
             all_ok = False
     print("=" * 60)
-    print(f"OVERALL RESULT: {'ALL RBAC TESTS PASSED (6/6)' if all_ok else 'SOME TESTS FAILED'}")
+    total_tests = len(test_results)
+    passed_count = sum(1 for _, p in test_results if p)
+    print(f"OVERALL RESULT: {passed_count}/{total_tests} TESTS PASSED")
     return 0 if all_ok else 1
 
 if __name__ == "__main__":

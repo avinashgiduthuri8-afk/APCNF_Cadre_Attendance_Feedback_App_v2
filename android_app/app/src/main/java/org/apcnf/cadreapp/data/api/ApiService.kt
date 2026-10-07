@@ -284,7 +284,11 @@ class ApiService(private val serverUrl: String) {
      */
     suspend fun submitAttendance(request: AttendanceRequest, token: String? = null): Result<String> = withContext(Dispatchers.IO) {
         try {
-            val reqWithToken = if (token != null) request.copy(token = token) else request
+            val authToken = token ?: request.token
+            if (authToken.isNullOrBlank()) {
+                return@withContext Result.failure(Exception("Authentication token is required."))
+            }
+            val reqWithToken = request.copy(token = authToken)
             val payload = ApiClient.gson.toJson(reqWithToken)
             val responseBody = postJson(payload)
             val json = JSONObject(responseBody)
@@ -306,7 +310,11 @@ class ApiService(private val serverUrl: String) {
      */
     suspend fun submitFeedback(request: FeedbackRequest, token: String? = null): Result<String> = withContext(Dispatchers.IO) {
         try {
-            val reqWithToken = if (token != null) request.copy(token = token) else request
+            val authToken = token ?: request.token
+            if (authToken.isNullOrBlank()) {
+                return@withContext Result.failure(Exception("Authentication token is required."))
+            }
+            val reqWithToken = request.copy(token = authToken)
             val payload = ApiClient.gson.toJson(reqWithToken)
             val responseBody = postJson(payload)
             val json = JSONObject(responseBody)
@@ -328,10 +336,13 @@ class ApiService(private val serverUrl: String) {
      */
     suspend fun getDashboard(cadreId: String, token: String? = null): Result<DashboardData> = withContext(Dispatchers.IO) {
         try {
+            if (token.isNullOrBlank()) {
+                return@withContext Result.failure(Exception("Authentication token is required."))
+            }
             val payload = JSONObject().apply {
                 put("action", "getDashboard")
                 put("cadreId", cadreId.trim())
-                if (token != null) put("token", token)
+                put("token", token)
             }.toString()
 
             val responseBody = postJson(payload)

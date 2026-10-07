@@ -593,22 +593,75 @@ class LocalDevHandler(http.server.SimpleHTTPRequestHandler):
                 })
                 return
 
-            # 5. Cadre Operations
+            # 5. Cadre Operations (Strict Token Auth & Identity Binding)
             if action == "saveAttendance":
-                ATTENDANCE_DB.append(payload)
+                token = payload.get("token")
+                valid, err, auth = verify_token(token, "CADRE")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err or "Authentication token required."}, status=403)
+                    return
+                auth_cadre_id = str(auth.get("sub", "")).strip().upper()
+                if payload.get("cadreId"):
+                    client_cadre_id = str(payload.get("cadreId", "")).strip().upper()
+                    if client_cadre_id != auth_cadre_id:
+                        self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": "Token identity mismatch. Client cadreId does not match authenticated user."}, status=403)
+                        return
+                matched = next((c for c in CADRE_MASTER if c["cadreId"].upper() == auth_cadre_id and c.get("status", "Active").lower() == "active"), None)
+                if not matched:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": "Authenticated cadre is not active or not found."}, status=403)
+                    return
+                data = dict(payload)
+                data["cadreId"] = matched["cadreId"]
+                data["name"] = matched["name"]
+                data["mobile"] = matched["mobile"]
+                data["cadreType"] = matched["cadreType"]
+                ATTENDANCE_DB.append(data)
                 self.send_json_response({
                     "success": True,
-                    "message": f"Attendance for '{payload.get('activity', 'Field Visit')}' recorded successfully."
+                    "message": f"Attendance for '{data.get('activity', 'Field Visit')}' recorded successfully."
                 })
                 return
 
             if action == "saveFeedback":
-                FEEDBACK_DB.append(payload)
+                token = payload.get("token")
+                valid, err, auth = verify_token(token, "CADRE")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err or "Authentication token required."}, status=403)
+                    return
+                auth_cadre_id = str(auth.get("sub", "")).strip().upper()
+                if payload.get("cadreId"):
+                    client_cadre_id = str(payload.get("cadreId", "")).strip().upper()
+                    if client_cadre_id != auth_cadre_id:
+                        self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": "Token identity mismatch. Client cadreId does not match authenticated user."}, status=403)
+                        return
+                matched = next((c for c in CADRE_MASTER if c["cadreId"].upper() == auth_cadre_id and c.get("status", "Active").lower() == "active"), None)
+                if not matched:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": "Authenticated cadre is not active or not found."}, status=403)
+                    return
+                data = dict(payload)
+                data["cadreId"] = matched["cadreId"]
+                data["name"] = matched["name"]
+                data["mobile"] = matched["mobile"]
+                data["cadreType"] = matched["cadreType"]
+                FEEDBACK_DB.append(data)
                 self.send_json_response({"success": True, "message": "Feedback submitted successfully."})
                 return
 
             if action == "getDashboard":
+                token = payload.get("token")
+                valid, err, auth = verify_token(token, "CADRE")
+                if not valid:
+                    self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": err or "Authentication token required."}, status=403)
+                    return
+                auth_cadre_id = str(auth.get("sub", "")).strip().upper()
+                if payload.get("cadreId"):
+                    client_cadre_id = str(payload.get("cadreId", "")).strip().upper()
+                    if client_cadre_id != auth_cadre_id:
+                        self.send_json_response({"success": False, "error": "UNAUTHORIZED", "message": "Token identity mismatch. Client cadreId does not match authenticated user."}, status=403)
+                        return
                 today = datetime.datetime.now().strftime("%Y-%m-%d")
+                my_field = any(a.get("cadreId", "").upper() == auth_cadre_id and a.get("activity") == "Field Visit" for a in ATTENDANCE_DB)
+                my_meet = any(a.get("cadreId", "").upper() == auth_cadre_id and a.get("activity") == "Attend Meeting" for a in ATTENDANCE_DB)
                 self.send_json_response({
                     "success": True,
                     "data": {
@@ -616,7 +669,7 @@ class LocalDevHandler(http.server.SimpleHTTPRequestHandler):
                         "totalFieldVisits": len(ATTENDANCE_DB) + 12,
                         "totalMeetings": 5,
                         "totalFeedback": len(FEEDBACK_DB) + 20,
-                        "myAttendance": {"fieldVisitDone": True, "meetingDone": False}
+                        "myAttendance": {"fieldVisitDone": my_field, "meetingDone": my_meet}
                     }
                 })
                 return

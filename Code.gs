@@ -50,7 +50,7 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.CSV)
         .downloadAsFile(res.filename);
     } catch (err) {
-      return jsonResponse_({ success: false, error: "AUTH_ERROR", message: err.message });
+      return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: err.message });
     }
   }
 
@@ -127,32 +127,70 @@ function doPost(e) {
         });
       }
 
-      // --- 3. Cadre Operations ---
+      // --- 3. Cadre Operations (Strict Token Auth & Identity Binding) ---
       case "saveAttendance": {
-        // If token provided, ensure it belongs to CADRE
-        if (payload.token) {
-          const auth = verifyToken_(payload.token, CONFIG.ROLES.CADRE);
-          if (auth.sub.toUpperCase() !== String(payload.cadreId).trim().toUpperCase()) {
-            return jsonResponse_({ success: false, message: "Token identity mismatch." });
+        if (!payload.token) {
+          return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Authentication token required." });
+        }
+        const auth = verifyToken_(payload.token, CONFIG.ROLES.CADRE);
+        const authCadreId = String(auth.sub || "").trim().toUpperCase();
+        if (payload.cadreId) {
+          const clientCadreId = String(payload.cadreId).trim().toUpperCase();
+          if (clientCadreId !== authCadreId) {
+            return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Token identity mismatch. Client cadreId does not match authenticated user." });
           }
         }
+        const verifiedCadre = getCadreById_(authCadreId);
+        if (!verifiedCadre || String(verifiedCadre.status || "").toLowerCase() !== "active") {
+          return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Authenticated cadre is not active or not found." });
+        }
+        payload.cadreId = verifiedCadre.cadreId;
+        payload.name = verifiedCadre.name;
+        payload.mobile = verifiedCadre.mobile;
+        payload.cadreType = verifiedCadre.cadreType;
+
         const result = saveAttendance(payload);
         return jsonResponse_({ success: true, message: result.message, timestamp: new Date().toISOString() });
       }
 
       case "saveFeedback": {
-        if (payload.token) {
-          const auth = verifyToken_(payload.token, CONFIG.ROLES.CADRE);
-          if (auth.sub.toUpperCase() !== String(payload.cadreId).trim().toUpperCase()) {
-            return jsonResponse_({ success: false, message: "Token identity mismatch." });
+        if (!payload.token) {
+          return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Authentication token required." });
+        }
+        const auth = verifyToken_(payload.token, CONFIG.ROLES.CADRE);
+        const authCadreId = String(auth.sub || "").trim().toUpperCase();
+        if (payload.cadreId) {
+          const clientCadreId = String(payload.cadreId).trim().toUpperCase();
+          if (clientCadreId !== authCadreId) {
+            return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Token identity mismatch. Client cadreId does not match authenticated user." });
           }
         }
+        const verifiedCadre = getCadreById_(authCadreId);
+        if (!verifiedCadre || String(verifiedCadre.status || "").toLowerCase() !== "active") {
+          return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Authenticated cadre is not active or not found." });
+        }
+        payload.cadreId = verifiedCadre.cadreId;
+        payload.name = verifiedCadre.name;
+        payload.mobile = verifiedCadre.mobile;
+        payload.cadreType = verifiedCadre.cadreType;
+
         const result = saveFeedback(payload);
         return jsonResponse_({ success: true, message: result.message, timestamp: new Date().toISOString() });
       }
 
       case "getDashboard": {
-        const dash = getDashboard(payload.cadreId);
+        if (!payload.token) {
+          return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Authentication token required." });
+        }
+        const auth = verifyToken_(payload.token, CONFIG.ROLES.CADRE);
+        const authCadreId = String(auth.sub || "").trim().toUpperCase();
+        if (payload.cadreId) {
+          const clientCadreId = String(payload.cadreId).trim().toUpperCase();
+          if (clientCadreId !== authCadreId) {
+            return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: "Token identity mismatch. Client cadreId does not match authenticated user." });
+          }
+        }
+        const dash = getDashboard(authCadreId);
         return jsonResponse_({ success: true, data: dash });
       }
 
@@ -197,7 +235,7 @@ function doPost(e) {
         return jsonResponse_({ success: false, message: "Invalid action parameter: " + action });
     }
   } catch (err) {
-    return jsonResponse_({ success: false, error: "AUTH_ERROR", message: err.message || "Server error." });
+    return jsonResponse_({ success: false, error: "UNAUTHORIZED", message: err.message || "Server error." });
   }
 }
 
@@ -392,6 +430,38 @@ function getCadre(id, mobile) {
     const rowMob = String(row[2] || "").replace(/\D/g, "").slice(-10);
 
     if (cleanId === rowId && cleanMob === rowMob) {
+      return {
+        cadreId: String(row[0] || "").trim(),
+        name: String(row[1] || "").trim(),
+        mobile: String(row[2] || "").trim(),
+        cadreType: String(row[3] || "").trim(),
+        district: String(row[4] || "").trim(),
+        mandal: String(row[5] || "").trim(),
+        village: String(row[6] || "").trim(),
+        vo: String(row[7] || "").trim(),
+        status: String(row[8] || "Active").trim()
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Searches for a Cadre in Cadre_Master strictly by verified Cadre ID.
+ */
+function getCadreById_(id) {
+  setupSheets_();
+  const cleanId = String(id || "").trim().toUpperCase();
+  if (!cleanId) return null;
+
+  const sheet = SpreadsheetApp.getActive().getSheetByName(CONFIG.SHEETS.CADRES);
+  const rows = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const rowId = String(row[0] || "").trim().toUpperCase();
+
+    if (cleanId === rowId) {
       return {
         cadreId: String(row[0] || "").trim(),
         name: String(row[1] || "").trim(),

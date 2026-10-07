@@ -22,6 +22,11 @@ WHAT'S INCLUDED:
      • Dynamic server URL configuration directly in the app UI
      • Bilingual interface (English & Telugu prompts)
 
+3. Security & Authentication Architecture Guide:
+   - Refer to P0_01_STRICT_CADRE_AUTHENTICATION.md for full details on
+     strict cadre API authentication, HMAC token verification, identity binding,
+     and automated test verification (test_rbac.py).
+
 ========================================================================
 PART 1: BACKEND DEPLOYMENT (Google Sheets + Apps Script)
 ========================================================================

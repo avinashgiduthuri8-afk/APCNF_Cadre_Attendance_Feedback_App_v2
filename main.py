@@ -436,9 +436,32 @@ def process_action(payload: Dict[str, Any]):
 
             return {"success": False, "message": "Invalid admin credentials."}
 
-        # 3. Save Attendance
+        # 3. Save Attendance (Strict Token Auth & Identity Binding)
         if action == "saveAttendance":
-            cadre_id = str(payload.get("cadreId", "")).strip().upper()
+            valid, err, auth = verify_token(payload.get("token"), "CADRE")
+            if not valid:
+                return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": err or "Authentication token required."})
+
+            auth_cadre_id = str(auth.get("sub", "")).strip().upper()
+            if payload.get("cadreId"):
+                client_cadre_id = str(payload.get("cadreId", "")).strip().upper()
+                if client_cadre_id != auth_cadre_id:
+                    return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": "Token identity mismatch. Client cadreId does not match authenticated user."})
+
+            cursor.execute("""
+                SELECT cadre_id, name, mobile, cadre_type, status
+                FROM cadres
+                WHERE UPPER(cadre_id) = ?
+            """, (auth_cadre_id,))
+            cadre_row = cursor.fetchone()
+            if not cadre_row or str(cadre_row["status"]).lower() != "active":
+                return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": "Authenticated cadre is not active or not found."})
+
+            cadre_id = cadre_row["cadre_id"]
+            name = cadre_row["name"]
+            mobile = cadre_row["mobile"]
+            cadre_type = cadre_row["cadre_type"]
+
             activity = str(payload.get("activity", "Field Visit"))
             now_dt = datetime.datetime.now(TIMEZONE_OFFSET)
             today_str = now_dt.strftime("%Y-%m-%d")
@@ -455,8 +478,8 @@ def process_action(payload: Dict[str, Any]):
                 today_str,
                 time_str,
                 cadre_id,
-                payload.get("name", "Cadre"),
-                payload.get("cadreType", "FMT"),
+                name,
+                cadre_type,
                 activity,
                 payload.get("remarks", ""),
                 photo_url,
@@ -471,8 +494,32 @@ def process_action(payload: Dict[str, Any]):
                 "message": f"Attendance for '{activity}' recorded successfully."
             }
 
-        # 4. Save Feedback
+        # 4. Save Feedback (Strict Token Auth & Identity Binding)
         if action == "saveFeedback":
+            valid, err, auth = verify_token(payload.get("token"), "CADRE")
+            if not valid:
+                return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": err or "Authentication token required."})
+
+            auth_cadre_id = str(auth.get("sub", "")).strip().upper()
+            if payload.get("cadreId"):
+                client_cadre_id = str(payload.get("cadreId", "")).strip().upper()
+                if client_cadre_id != auth_cadre_id:
+                    return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": "Token identity mismatch. Client cadreId does not match authenticated user."})
+
+            cursor.execute("""
+                SELECT cadre_id, name, mobile, cadre_type, status
+                FROM cadres
+                WHERE UPPER(cadre_id) = ?
+            """, (auth_cadre_id,))
+            cadre_row = cursor.fetchone()
+            if not cadre_row or str(cadre_row["status"]).lower() != "active":
+                return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": "Authenticated cadre is not active or not found."})
+
+            cadre_id = cadre_row["cadre_id"]
+            name = cadre_row["name"]
+            mobile = cadre_row["mobile"]
+            cadre_type = cadre_row["cadre_type"]
+
             now_dt = datetime.datetime.now(TIMEZONE_OFFSET)
             today_str = now_dt.strftime("%Y-%m-%d")
 
@@ -482,9 +529,9 @@ def process_action(payload: Dict[str, Any]):
             """, (
                 now_dt.isoformat(),
                 today_str,
-                str(payload.get("cadreId", "")).strip().upper(),
-                payload.get("name", "Cadre"),
-                payload.get("cadreType", "FMT"),
+                cadre_id,
+                name,
+                cadre_type,
                 payload.get("training", "Training Session"),
                 payload.get("trainer", "Resource Person"),
                 int(payload.get("contentRating") or 5),
@@ -497,9 +544,18 @@ def process_action(payload: Dict[str, Any]):
             conn.commit()
             return {"success": True, "message": "Feedback submitted successfully."}
 
-        # 5. Cadre Dashboard
+        # 5. Cadre Dashboard (Strict Token Auth & Identity Binding)
         if action == "getDashboard":
-            cadre_id = str(payload.get("cadreId", "")).strip().upper()
+            valid, err, auth = verify_token(payload.get("token"), "CADRE")
+            if not valid:
+                return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": err or "Authentication token required."})
+
+            auth_cadre_id = str(auth.get("sub", "")).strip().upper()
+            if payload.get("cadreId"):
+                client_cadre_id = str(payload.get("cadreId", "")).strip().upper()
+                if client_cadre_id != auth_cadre_id:
+                    return JSONResponse(status_code=403, content={"success": False, "error": "UNAUTHORIZED", "message": "Token identity mismatch. Client cadreId does not match authenticated user."})
+
             today_str = datetime.datetime.now(TIMEZONE_OFFSET).strftime("%Y-%m-%d")
 
             cursor.execute("SELECT COUNT(*) as c FROM attendance WHERE activity = 'Field Visit'")
@@ -511,10 +567,10 @@ def process_action(payload: Dict[str, Any]):
             cursor.execute("SELECT COUNT(*) as c FROM feedback")
             total_fb = cursor.fetchone()["c"]
 
-            cursor.execute("SELECT id FROM attendance WHERE UPPER(cadre_id) = ? AND date = ? AND activity = 'Field Visit'", (cadre_id, today_str))
+            cursor.execute("SELECT id FROM attendance WHERE UPPER(cadre_id) = ? AND date = ? AND activity = 'Field Visit'", (auth_cadre_id, today_str))
             fv_done = cursor.fetchone() is not None
 
-            cursor.execute("SELECT id FROM attendance WHERE UPPER(cadre_id) = ? AND date = ? AND activity = 'Attend Meeting'", (cadre_id, today_str))
+            cursor.execute("SELECT id FROM attendance WHERE UPPER(cadre_id) = ? AND date = ? AND activity = 'Attend Meeting'", (auth_cadre_id, today_str))
             mt_done = cursor.fetchone() is not None
 
             return {
@@ -802,8 +858,8 @@ async def api_post_feedback(request: Request):
     return process_action(payload)
 
 @app.get("/api/dashboard")
-def api_get_dashboard(cadreId: str = Query(...)):
-    payload = {"action": "getDashboard", "cadreId": cadreId}
+def api_get_dashboard(cadreId: str = Query(...), token: Optional[str] = Query(None)):
+    payload = {"action": "getDashboard", "cadreId": cadreId, "token": token}
     return process_action(payload)
 
 @app.get("/api/export/attendance")
