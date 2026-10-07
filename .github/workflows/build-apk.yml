@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
@@ -24,14 +24,9 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.7'
 
-      - name: Ensure gradlew is executable
-        run: |
-          cd android_app
-          gradle wrapper --gradle-version 8.7
-          chmod +x gradlew
+      - name: Make gradlew executable
+        run: chmod +x android_app/gradlew
 
       - name: Build Android APK
         working-directory: ./android_app
@@ -41,7 +36,6 @@ jobs:
         run: |
           mkdir -p output_apk
           cp android_app/app/build/outputs/apk/debug/app-debug.apk output_apk/APCNF_Cadre_Attendance_App_v2.apk
-          echo "APK generated successfully!"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
