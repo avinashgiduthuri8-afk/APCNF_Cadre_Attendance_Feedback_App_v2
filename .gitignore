@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data/*.db*
+data/uploads/photos/*
+!data/uploads/photos/.gitkeep
+.gradle/
+build/
+local.properties
